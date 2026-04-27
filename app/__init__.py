@@ -1,0 +1,1 @@
+"""ChronicCare FastAPI application package."""
