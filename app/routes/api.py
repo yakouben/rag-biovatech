@@ -25,6 +25,7 @@ from app.schemas import (
     PredictionRecord,
     RiskAssessmentRequest,
     RiskAssessmentResponse,
+    DoctorChatRequest,
 )
 from app.services.adherence_service import get_adherence_service
 from app.services.drift_service import get_drift_service
