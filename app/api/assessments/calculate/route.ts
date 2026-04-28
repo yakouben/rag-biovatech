@@ -1,36 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-/**
- * POST /api/assessments/calculate
- * Calculate patient cardiovascular risk score based on health metrics
- * 
- * Request:
- * {
- *   "patient_id": "uuid",
- *   "age": 55,
- *   "systolic_bp": 140,
- *   "diastolic_bp": 90,
- *   "fasting_glucose": 120,
- *   "bmi": 28.5,
- *   "smoking": true,
- *   "family_history": true,
- *   "comorbidities": 1
- * }
- * 
- * Response:
- * {
- *   "risk_score": 0.72,
- *   "risk_level": "HIGH",
- *   "assessment_id": "uuid",
- *   "recommendations": [...]
- * }
- */
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-);
+import { NextRequest, NextResponse } from 'next/server'
+import { supabase } from '@/lib/supabase'
 
 interface AssessmentData {
   patient_id: string;

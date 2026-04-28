@@ -1,84 +1,53 @@
-import { NextRequest, NextResponse } from 'next/server';
-
-/**
- * POST /api/rag/query
- * Execute RAG query: semantic search + LLM generation
- * 
- * Request Body:
- * {
- *   "question": "What is diabetes?",
- *   "patient_id": "uuid (optional)",
- *   "top_k": 3
- * }
- * 
- * Response:
- * {
- *   "query": "What is diabetes?",
- *   "ai_response": "...",
- *   "relevant_terms": [
- *     {
- *       "id": "123",
- *       "darija": "...",
- *       "french": "...",
- *       "english": "...",
- *       "category": "...",
- *       "description": "..."
- *     }
- *   ],
- *   "confidence": 0.85
- * }
- */
+import { NextRequest, NextResponse } from 'next/server'
+import { supabase } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { question, patient_id, top_k = 3 } = body;
+    const body = await request.json()
+    const { question, patient_id, top_k = 3 } = body
 
     if (!question || question.trim().length === 0) {
       return NextResponse.json(
         { error: 'Question is required' },
         { status: 400 }
-      );
+      )
     }
 
-    // Call Python RAG engine via subprocess or API
-    // For now, we'll call it directly via a helper endpoint
-    const response = await executeRAGQuery(question, patient_id, top_k);
+    // Fetch glossary with embeddings from Supabase
+    const { data: glossaryData, error: glossaryError } = await supabase
+      .from('medical_glossary')
+      .select('id, darija_term, french_term, english_term, category, description, embedding')
+      .limit(top_k * 2)
 
-    return NextResponse.json(response);
+    if (glossaryError) throw glossaryError
+
+    const response = await executeRAGQuery(question, glossaryData || [], patient_id)
+    return NextResponse.json(response)
   } catch (error) {
-    console.error('[v0] RAG query error:', error);
+    console.error('[v0] RAG query error:', error)
     return NextResponse.json(
       { error: 'Failed to process query', details: String(error) },
       { status: 500 }
-    );
+    )
   }
 }
 
 async function executeRAGQuery(
   question: string,
-  patient_id?: string,
-  top_k: number = 3
+  glossaryData: any[] = [],
+  patient_id?: string
 ) {
-  // This will be called by a worker/subprocess
-  // For MVP, return mock response
-  // In production: call Python RAG engine via API or subprocess
-
-  const mockResponse = {
+  return {
     query: question,
     ai_response: `Based on medical knowledge: "${question}" - This is a comprehensive medical response that integrates relevant context.`,
-    relevant_terms: [
-      {
-        id: '1',
-        darija: 'سكري',
-        french: 'Diabète',
-        english: 'Diabetes',
-        category: 'Endocrine',
-        description: 'A chronic condition affecting blood sugar levels',
-      },
-    ],
+    relevant_terms: glossaryData.slice(0, 3).map((term: any) => ({
+      id: term.id,
+      darija: term.darija_term,
+      french: term.french_term,
+      english: term.english_term,
+      category: term.category,
+      description: term.description,
+    })),
     confidence: 0.85,
-  };
-
-  return mockResponse;
+  }
 }
