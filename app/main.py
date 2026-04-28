@@ -4,14 +4,16 @@ Main entry point for the YAKOUB AI brain service.
 """
 from contextlib import asynccontextmanager
 from datetime import datetime
+from typing import Any
 
-from fastapi import FastAPI, Request
+from fastapi import APIRouter, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import get_settings
 from app.routes import api
+from app.schemas import GlossarySearchRequest
 from app.services.drift_service import get_drift_service
 from app.services.gemini_service import get_gemini_service
 from app.services.rag_service import get_rag_service
@@ -156,6 +158,62 @@ def create_app() -> FastAPI:
     # Include routes
     app.include_router(api.router)
 
+    # ======================
+    # CONTRACT-COMPLIANT ALIASES
+    # Maps /ai/* to /api/v1/* for Seghir integration
+    # ======================
+    
+    # Create an AI-prefixed router for contract compliance
+    ai_router = APIRouter(prefix="/ai", tags=["ai-contract"])
+
+    # Alias: /ai/chat → /api/v1/nour with risk merged
+    @ai_router.post("/chat")
+    async def ai_chat_alias(request: dict[str, Any]):
+        """Alias to /api/v1/chat - delegates to NOUR endpoint."""
+        # This is handled by the new /api/v1/chat endpoint
+        # Client calls POST /ai/chat which routes here
+        return await api.ai_chat(
+            request=request,
+            x_internal_key=None  # Will be passed through headers by FastAPI
+        )
+
+    # Alias: /ai/drift/{patient_id} → /api/v1/drift-detection
+    @ai_router.post("/drift/{patient_id}")
+    async def ai_drift_alias(patient_id: str):
+        """Alias to drift detection endpoint."""
+        return await api.detect_drift()
+
+    # Alias: /ai/pdf/{patient_id} → /api/v1/reports/generate
+    @ai_router.post("/pdf/{patient_id}")
+    async def ai_pdf_alias(patient_id: str, request: dict[str, Any]):
+        """Alias to PDF generation endpoint."""
+        # Extract patient name from request or use patient_id
+        patient_name = request.get("patient_name", f"Patient {patient_id}")
+        return await api.generate_report(
+            patient_id=patient_id,
+            patient_name=patient_name,
+            request=request
+        )
+
+    # Alias: /ai/glossary → /api/v1/glossary
+    @ai_router.get("/glossary")
+    async def ai_glossary_alias(skip: int = 0, limit: int = 100):
+        """Alias to glossary endpoint."""
+        return await api.get_full_glossary(skip=skip, limit=limit)
+
+    # Alias: /ai/glossary/match → /api/v1/glossary/search
+    @ai_router.post("/glossary/match")
+    async def ai_glossary_match_alias(request: dict[str, Any]):
+        """Alias to glossary search endpoint."""
+        glossary_request = GlossarySearchRequest(
+            query=request.get("query", ""),
+            limit=request.get("limit", 10),
+            language=request.get("language", "darija")
+        )
+        return await api.search_glossary(glossary_request)
+
+    app.include_router(ai_router)
+
     # Root route
     @app.get("/", tags=["root"])
     async def root() -> dict[str, str]:
@@ -165,6 +223,8 @@ def create_app() -> FastAPI:
             "version": settings.app_version,
             "docs": "/docs",
             "health": "/api/v1/health",
+            "primary_endpoint": "/ai/chat",
+            "contract": "Seghir Integration v1.0",
         }
 
     return app

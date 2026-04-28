@@ -2,10 +2,11 @@
 FastAPI routes for ChronicCare AI service.
 Implements all 7+ endpoints with proper error handling and validation.
 """
+import os
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Header, Query, UploadFile, status
 from fastapi.responses import FileResponse, JSONResponse
 
 from app.config import get_settings
@@ -33,6 +34,107 @@ from app.utils.logging import get_logger
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["chronicare"])
+
+
+# ======================
+# Auth Dependency
+# ======================
+
+def verify_internal_api_key(x_internal_key: str = Header(None)) -> None:
+    """Verify the internal API key for secure inter-service communication."""
+    expected_key = os.getenv("INTERNAL_API_KEY")
+    if expected_key and x_internal_key != expected_key:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing INTERNAL_API_KEY header"
+        )
+
+
+# ======================
+# Contract-Compliant Routes (/ai/* prefix)
+# ======================
+
+
+@router.post(
+    "/chat",
+    response_model=dict,
+    status_code=status.HTTP_200_OK,
+    summary="AI Chat with Integrated Risk Assessment",
+    description="Main endpoint for patient conversations with automatic risk scoring and clinical reasoning",
+    tags=["ai-contract"]
+)
+async def ai_chat(
+    request: NOURRequest,
+    x_internal_key: str = Header(None),
+) -> dict[str, Any]:
+    """
+    Contract-compliant /ai/chat endpoint.
+    Combines NOUR clinical reasoning with automatic risk assessment in a single response.
+    This is the PRIMARY endpoint that Seghir's Express service calls.
+
+    Args:
+        request: NOURRequest with patient_id, text, and patient_profile
+        x_internal_key: Internal API key for service-to-service auth
+
+    Returns:
+        Unified response with clinical assessment, risk score, and confidence
+    """
+    try:
+        # Verify API key if configured
+        verify_internal_api_key(x_internal_key)
+
+        gemini_service = get_gemini_service()
+        risk_service = get_risk_service()
+        rag_service = get_rag_service()
+
+        # Get risk assessment
+        risk_assessment = await risk_service.assess_patient_risk(
+            request.patient_data.dict()
+        )
+
+        # Get glossary context
+        glossary_context = ""
+        glossary_entries = []
+        if request.include_glossary:
+            glossary_results = await rag_service.search_medical_terms(
+                request.patient_symptoms, limit=5
+            )
+            glossary_entries = glossary_results
+            glossary_context = await rag_service.build_glossary_context(
+                [s.get("darija", "") for s in glossary_results if s.get("darija")]
+            )
+
+        # Generate NOUR response
+        nour_response = await gemini_service.generate_nour_response(
+            patient_symptoms=request.patient_symptoms,
+            glossary_context=glossary_context,
+            risk_assessment=risk_assessment["category"],
+        )
+
+        # UNIFIED RESPONSE - matches Seghir's contract exactly
+        return {
+            "nour_response": nour_response,
+            "extracted_entities": {
+                "symptoms": request.patient_symptoms.split(",") if isinstance(request.patient_symptoms, str) else request.patient_symptoms,
+                "missed_meds": [],  # Extract from patient_data if available
+            },
+            "risk_score": risk_assessment["category"],  # HIGH, MODERATE, LOW
+            "confidence": risk_assessment["probabilities"].get(
+                risk_assessment["category"].lower(), 0.5
+            ),
+            "factors": risk_assessment["recommendations"],
+            "monitoring_frequency": risk_assessment["monitoring_frequency"],
+            "glossary_context": glossary_entries,
+        }
+    except ChronicCareException as e:
+        logger.error(f"AI chat error: {str(e)}")
+        raise HTTPException(
+            status_code=e.status_code,
+            detail={
+                "error_code": e.error_code,
+                "message": e.message,
+            },
+        )
 
 
 # ======================
