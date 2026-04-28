@@ -1,13 +1,17 @@
 """
 Gemini AI Service for ChronicCare.
 Handles embeddings and NOUR reasoning with proper error handling.
+Using the latest google-genai SDK.
 """
 import asyncio
-from typing import Any
+import json
+from typing import Any, Optional
 
-import google.generativeai as genai
+import google.genai as genai
+from google.genai import types
 
 from app.config import get_settings
+from app.schemas import ClinicalEntities
 from app.utils.exceptions import EmbeddingError, GeminiError
 from app.utils.logging import get_logger
 
@@ -30,46 +34,34 @@ class GeminiService:
         """Initialize Gemini service."""
         if not self._initialized:
             settings = get_settings()
-            genai.configure(api_key=settings.gemini_api_key)
+            # Initialize the new SDK client
+            self.client = genai.Client(api_key=settings.gemini_api_key)
             self.embedding_model = settings.gemini_embedding_model
             self.generation_model = settings.gemini_model
             self._initialized = True
-            logger.info("Gemini service initialized")
+            logger.info("Gemini service initialized (using google-genai SDK)")
 
     async def embed_text(self, text: str) -> list[float]:
         """
         Generate embedding for text using Gemini.
-
-        Args:
-            text: Input text to embed
-
-        Returns:
-            List of floats representing the embedding vector
-
-        Raises:
-            EmbeddingError: If embedding generation fails
         """
         if not text or not text.strip():
             raise EmbeddingError("Cannot embed empty text")
 
         try:
-            # Run embedding in thread pool to avoid blocking
             loop = asyncio.get_event_loop()
-            embedding = await loop.run_in_executor(
+            response = await loop.run_in_executor(
                 None,
-                lambda: genai.embed_content(
+                lambda: self.client.models.embed_content(
                     model=self.embedding_model,
-                    content=text,
-                    task_type="RETRIEVAL_DOCUMENT",
+                    contents=text,
+                    config=types.EmbedContentConfig(task_type="RETRIEVAL_DOCUMENT")
                 ),
             )
-            return embedding["embedding"]
+            return response.embeddings[0].values
         except Exception as e:
             logger.error(f"Embedding failed for text: {str(e)}")
-            raise EmbeddingError(
-                f"Failed to generate embedding: {str(e)}",
-                details={"text_length": len(text)},
-            )
+            raise EmbeddingError(f"Failed to generate embedding: {str(e)}")
 
     async def generate_nour_response(
         self,
@@ -80,19 +72,6 @@ class GeminiService:
     ) -> str:
         """
         Generate NOUR (Nurturing Outcomes Using Reasoning) response.
-        This is the core clinical reasoning engine.
-
-        Args:
-            patient_symptoms: Description of patient symptoms in Darija/French
-            glossary_context: Relevant medical terms from glossary
-            risk_assessment: Risk level assessment from decision tree
-            temperature: Model temperature for response variation
-
-        Returns:
-            Clinical reasoning response with recommendations
-
-        Raises:
-            GeminiError: If generation fails
         """
         try:
             prompt = self._build_nour_prompt(
@@ -102,9 +81,10 @@ class GeminiService:
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(
                 None,
-                lambda: genai.GenerativeModel(self.generation_model).generate_content(
-                    prompt,
-                    generation_config=genai.types.GenerationConfig(
+                lambda: self.client.models.generate_content(
+                    model=self.generation_model,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
                         temperature=temperature,
                         top_p=0.95,
                         top_k=40,
@@ -117,18 +97,9 @@ class GeminiService:
                 raise GeminiError("Empty response from model")
 
             return response.text
-        except GeminiError:
-            raise
         except Exception as e:
             logger.error(f"NOUR generation failed: {str(e)}")
-            raise GeminiError(
-                f"Failed to generate NOUR response: {str(e)}",
-                details={
-                    "symptoms_length": len(patient_symptoms),
-                    "has_context": bool(glossary_context),
-                    "risk_level": risk_assessment,
-                },
-            )
+            raise GeminiError(f"Failed to generate NOUR response: {str(e)}")
 
     def _build_nour_prompt(
         self, symptoms: str, glossary_context: str, risk_assessment: str
@@ -160,40 +131,116 @@ Please provide:
 - Monitoring Recommendations
 - Red Flags to Watch For"""
 
+    async def extract_clinical_entities(self, text: str) -> ClinicalEntities:
+        """
+        Extract structured clinical entities from patient text.
+        """
+        try:
+            prompt = f"""Extract clinical entities from the following patient description.
+You MUST return a JSON object with the following structure:
+{{
+  "symptoms": ["list", "of", "symptoms"],
+  "medications": ["list", "of", "meds"],
+  "missed_medications": ["list", "of", "missed", "meds"],
+  "vitals": {{"systolic_bp": null, "diastolic_bp": null, "glucose": null, "bmi": null}},
+  "severity_hints": ["high", "severe", "urgent"],
+  "clinical_note": "A short 1-sentence summary"
+}}
+
+The text may be in Algerian Darija, French, or English.
+PATIENT TEXT:
+"{text}"
+"""
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                lambda: self.client.models.generate_content(
+                    model=self.generation_model,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                    ),
+                )
+            )
+
+            data = json.loads(response.text)
+            return ClinicalEntities(**data)
+        except Exception as e:
+            logger.warning(f"Entity extraction failed: {str(e)}")
+            return ClinicalEntities(clinical_note="Extraction failed")
+
+    async def generate_nurture_notification(self, patient_name: str = "Khalti/Ammi") -> str:
+        """Generate a warm, caring nurture notification in Algerian Darija."""
+        prompt = f"""You are Nour, a kind and respectful Algerian clinical companion. 
+Generate a short, warm check-in message in Algerian Darija for {patient_name} who hasn't recorded their medication in 3 days.
+Use very respectful terms like 'Khalti' or 'Ammi'.
+Sound like a concerned daughter or a kind nurse.
+The goal is to check in on them and remind them of their medication.
+KEEP IT IN DARIJA ONLY. NO FRENCH, NO ENGLISH."""
+        
+        try:
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                lambda: self.client.models.generate_content(
+                    model=self.generation_model,
+                    contents=prompt
+                )
+            )
+            return response.text
+        except Exception as e:
+            logger.error(f"Nurture generation failed: {str(e)}")
+            return "Khalti/Ammi, labess? Maranich nchoufek f Nour had liyam. Matنسaych dwa dialek, sahtek hiya el sah."
+
+    async def generate_doctor_answer(self, question: str, history_context: str) -> str:
+        """Answer a doctor's question based on patient clinical history."""
+        prompt = f"""You are a clinical assistant analyzing a patient's history for a doctor.
+QUESTION: {question}
+
+PATIENT HISTORY CONTEXT:
+{history_context}
+
+INSTRUCTIONS:
+1. Answer the doctor's question precisely based ONLY on the provided history.
+2. Highlight any trends (e.g., increasing BP, missed meds).
+3. If the data doesn't contain the answer, say so clearly.
+4. Maintain a professional, clinical tone.
+"""
+        try:
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                lambda: self.client.models.generate_content(
+                    model=self.generation_model,
+                    contents=prompt
+                )
+            )
+            return response.text
+        except Exception as e:
+            logger.error(f"Doctor chat failed: {str(e)}")
+            return "Unable to analyze history at this time."
+
     async def embed_batch(self, texts: list[str]) -> list[list[float]]:
         """
         Generate embeddings for multiple texts efficiently.
-
-        Args:
-            texts: List of texts to embed
-
-        Returns:
-            List of embedding vectors
-
-        Raises:
-            EmbeddingError: If any embedding fails
         """
         if not texts:
             return []
 
         try:
-            embeddings = []
-            # Process in batches to avoid rate limiting
-            batch_size = 10
-            for i in range(0, len(texts), batch_size):
-                batch = texts[i : i + batch_size]
-                batch_embeddings = await asyncio.gather(
-                    *[self.embed_text(text) for text in batch],
-                    return_exceptions=False,
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                lambda: self.client.models.embed_content(
+                    model=self.embedding_model,
+                    contents=texts,
+                    config=types.EmbedContentConfig(task_type="RETRIEVAL_DOCUMENT")
                 )
-                embeddings.extend(batch_embeddings)
-            return embeddings
+            )
+            return [item.values for item in response.embeddings]
         except Exception as e:
             logger.error(f"Batch embedding failed: {str(e)}")
-            raise EmbeddingError(
-                f"Failed to generate batch embeddings: {str(e)}",
-                details={"batch_size": len(texts)},
-            )
+            raise EmbeddingError(f"Failed to generate batch embeddings: {str(e)}")
 
 
 # Global service instance

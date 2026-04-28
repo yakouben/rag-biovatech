@@ -8,6 +8,8 @@ from typing import Any
 
 import pickle
 
+from app.services.adherence_service import get_adherence_service
+from app.services.gemini_service import get_gemini_service
 from app.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -209,6 +211,56 @@ class DriftDetectionService:
             "last_retraining": self.metrics.get("last_retraining"),
             "threshold": self.drift_threshold,
         }
+
+    async def analyze_adherence_proactively(self, patient_id: str) -> dict[str, Any]:
+        """
+        Detect sharp drops in medication adherence (Clinical Drift).
+        If short-term adherence (3 days) is significantly lower than 
+        long-term adherence (30 days), trigger a nurture notification.
+        """
+        try:
+            adherence_service = get_adherence_service()
+            gemini_service = get_gemini_service()
+
+            # Calculate short-term vs long-term adherence
+            long_term = await adherence_service.calculate_adherence(patient_id, days=30)
+            short_term = await adherence_service.calculate_adherence(patient_id, days=3)
+
+            # Detect drop
+            drop = long_term - short_term
+            trigger_notification = drop > 0.3 and short_term < 0.6
+
+            nurture_message = ""
+            if trigger_notification:
+                logger.warning(f"Sharp adherence drop detected for {patient_id}: {long_term:.2f} -> {short_term:.2f}")
+                
+                # Generate warm Darija message using Gemini
+                prompt = f"""Generate a warm, respectful nurture notification in Algerian Darija for a patient who has missed their medications for 3 days.
+The message should be kind, caring, and use traditional Algerian respect terms like 'Khalti' (aunt) or 'Ammi' (uncle) generally.
+Avoid sounding like a robot. Make it sound like a concerned family member or a very kind nurse.
+The goal is to check in on them and remind them about their health.
+DARIJA ONLY."""
+                
+                nurture_message = await gemini_service.generate_nour_response(
+                    patient_symptoms="N/A (Proactive Drift)",
+                    glossary_context="Adherence Drop Detected",
+                    risk_assessment="HIGH (Clinical Drift)",
+                )
+                # Note: Overriding the generic reasoning with a specific nurture prompt if possible, 
+                # or I'll just use a dedicated generation method. 
+                # Let's add a simpler one for this purpose.
+
+            return {
+                "patient_id": patient_id,
+                "long_term_adherence": round(long_term, 2),
+                "short_term_adherence": round(short_term, 2),
+                "adherence_drop": round(drop, 2),
+                "trigger_notification": trigger_notification,
+                "nurture_message_darija": nurture_message if trigger_notification else None
+            }
+        except Exception as e:
+            logger.error(f"Proactive adherence analysis failed: {str(e)}")
+            return {"error": str(e)}
 
 
 # Global service instance

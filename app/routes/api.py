@@ -3,6 +3,7 @@ FastAPI routes for ChronicCare AI service.
 Implements all 7+ endpoints with proper error handling and validation.
 """
 import os
+import asyncio
 from datetime import datetime
 from typing import Any
 
@@ -10,6 +11,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, Header, Query, Uplo
 from fastapi.responses import FileResponse, JSONResponse
 
 from app.config import get_settings
+from app.database.connection import get_database
 from app.schemas import (
     DriftDetectionResponse,
     EmbedRequest,
@@ -24,6 +26,7 @@ from app.schemas import (
     RiskAssessmentRequest,
     RiskAssessmentResponse,
 )
+from app.services.adherence_service import get_adherence_service
 from app.services.drift_service import get_drift_service
 from app.services.gemini_service import get_gemini_service
 from app.services.pdf_service import get_pdf_service
@@ -104,20 +107,31 @@ async def ai_chat(
                 [s.get("darija", "") for s in glossary_results if s.get("darija")]
             )
 
-        # Generate NOUR response
-        nour_response = await gemini_service.generate_nour_response(
+        # Generate NOUR response and extract entities in parallel
+        nour_response_task = gemini_service.generate_nour_response(
             patient_symptoms=request.patient_symptoms,
             glossary_context=glossary_context,
             risk_assessment=risk_assessment["category"],
         )
+        extraction_task = gemini_service.extract_clinical_entities(request.patient_symptoms)
+        
+        nour_response, real_extracted_entities = await asyncio.gather(
+            nour_response_task, extraction_task
+        )
+
+        # SAVE TO SUPABASE (Background)
+        db = get_database()
+        asyncio.create_task(db.save_patient_assessment(
+            patient_id=request.patient_id,
+            assessment_data=risk_assessment,
+            entities=real_extracted_entities.dict(),
+            glossary_terms=[s.get("darija", "") for s in glossary_entries]
+        ))
 
         # UNIFIED RESPONSE - matches Seghir's contract exactly
         return {
             "nour_response": nour_response,
-            "extracted_entities": {
-                "symptoms": request.patient_symptoms.split(",") if isinstance(request.patient_symptoms, str) else request.patient_symptoms,
-                "missed_meds": [],  # Extract from patient_data if available
-            },
+            "extracted_entities": real_extracted_entities,
             "risk_score": risk_assessment["category"],  # HIGH, MODERATE, LOW
             "confidence": risk_assessment["probabilities"].get(
                 risk_assessment["category"].lower(), 0.5
@@ -397,17 +411,32 @@ async def nour_reasoning(request: NOURRequest) -> dict[str, Any]:
                 [s.get("darija", "") for s in glossary_results if s.get("darija")]
             )
 
-        # Generate NOUR response
-        nour_response = await gemini_service.generate_nour_response(
+        # Generate NOUR response and extract entities in parallel
+        nour_response_task = gemini_service.generate_nour_response(
             patient_symptoms=request.patient_symptoms,
             glossary_context=glossary_context,
             risk_assessment=risk_assessment["category"],
         )
+        extraction_task = gemini_service.extract_clinical_entities(request.patient_symptoms)
+        
+        nour_response, real_extracted_entities = await asyncio.gather(
+            nour_response_task, extraction_task
+        )
+
+        # SAVE TO SUPABASE (Background)
+        db = get_database()
+        asyncio.create_task(db.save_patient_assessment(
+            patient_id=request.patient_data.patient_id if hasattr(request.patient_data, "patient_id") else "unknown",
+            assessment_data=risk_assessment,
+            entities=real_extracted_entities.dict(),
+            glossary_terms=[s.get("darija", "") for s in glossary_entries]
+        ))
 
         return {
             "clinical_assessment": nour_response,
             "risk_assessment": risk_assessment,
             "recommendations": risk_assessment["recommendations"],
+            "extracted_entities": real_extracted_entities,
             "glossary_context": glossary_entries,
         }
     except ChronicCareException as e:
@@ -498,6 +527,7 @@ async def detect_drift() -> dict[str, Any]:
 async def generate_report(
     patient_id: str = Query(..., description="Patient identifier"),
     patient_name: str = Query(..., description="Patient full name"),
+    adherence_days: int = Query(30, ge=7, le=90, description="Number of days for adherence calculation"),
     request: NOURRequest = Depends(),
 ) -> FileResponse:
     """
@@ -519,11 +549,15 @@ async def generate_report(
         risk_service = get_risk_service()
         rag_service = get_rag_service()
         pdf_service = get_pdf_service()
+        adherence_service = get_adherence_service()
 
         # Perform assessments
         risk_assessment = await risk_service.assess_patient_risk(
             request.patient_data.dict()
         )
+        
+        # Calculate Adherence
+        adherence_score = await adherence_service.calculate_adherence(patient_id, days=adherence_days)
 
         glossary_results = await rag_service.search_medical_terms(
             request.patient_symptoms, limit=5
@@ -546,6 +580,7 @@ async def generate_report(
             risk_assessment=risk_assessment,
             clinical_notes=nour_response,
             glossary_context=glossary_context,
+            adherence_score=adherence_score,
         )
 
         # Return as file
@@ -581,3 +616,74 @@ async def error_example() -> dict[str, Any]:
         "details": {"field": "age", "reason": "must be positive"},
         "timestamp": datetime.utcnow().isoformat(),
     }
+
+# ======================
+# Doctor Intelligence
+# ======================
+
+@router.post(
+    "/doctor/chat",
+    status_code=status.HTTP_200_OK,
+    summary="Chat with Patient History",
+    description="Allows doctors to ask clinical questions about a patient's historical records.",
+)
+async def doctor_chat_history(request: DoctorChatRequest) -> dict[str, Any]:
+    """
+    RAG over patient history for clinical decision support.
+    """
+    try:
+        db = get_database()
+        gemini_service = get_gemini_service()
+        
+        # 1. Fetch historical interactions (last 50)
+        result = db.client.table("patient_assessments") \
+            .select("assessment_date, clinical_entities, symptoms") \
+            .eq("patient_id", request.patient_id) \
+            .order("assessment_date", desc=True) \
+            .limit(50) \
+            .execute()
+            
+        history = result.data if hasattr(result, "data") else []
+        
+        if not history:
+            return {"answer": "No historical data found for this patient.", "history_analyzed": 0}
+            
+        # 2. Build history context
+        context_parts = []
+        for entry in history:
+            date = entry.get("assessment_date", "Unknown Date")
+            entities = entry.get("clinical_entities", {})
+            note = entry.get("symptoms", "No note")
+            context_parts.append(f"Date: {date}\nSummary: {note}\nEntities: {entities}\n---")
+            
+        history_context = "\n".join(context_parts)
+        
+        # 3. Generate Answer
+        answer = await gemini_service.generate_doctor_answer(request.question, history_context)
+        
+        return {
+            "answer": answer,
+            "patient_id": request.patient_id,
+            "history_analyzed": len(history),
+            "raw_history": history if request.include_raw_history else None
+        }
+    except Exception as e:
+        logger.error(f"Doctor chat failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get(
+    "/patient/{patient_id}/check-drift",
+    summary="Proactive Adherence Check",
+    description="Checks for sharp adherence drops and generates a nurture message if needed.",
+)
+async def check_patient_drift(patient_id: str) -> dict[str, Any]:
+    """
+    Triggers proactive drift reasoning for a specific patient.
+    """
+    try:
+        drift_service = get_drift_service()
+        analysis = await drift_service.analyze_adherence_proactively(patient_id)
+        return analysis
+    except Exception as e:
+        logger.error(f"Drift check failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

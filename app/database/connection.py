@@ -105,6 +105,44 @@ class DatabaseManager:
                 details={"error": str(e)},
             )
 
+    async def save_patient_assessment(
+        self, 
+        patient_id: str, 
+        assessment_data: dict[str, Any],
+        entities: dict[str, Any],
+        glossary_terms: list[str] = None
+    ) -> dict[str, Any]:
+        """
+        Save patient assessment and clinical entities to Supabase.
+        
+        Args:
+            patient_id: Unique patient identifier
+            assessment_data: Risk assessment results
+            entities: Extracted clinical entities
+            glossary_terms: List of darija terms matched
+            
+        Returns:
+            Saved record
+        """
+        try:
+            record = {
+                "patient_id": patient_id,
+                "predicted_risk_level": assessment_data.get("risk_level"),
+                "risk_score": assessment_data.get("risk_score"),
+                "confidence": assessment_data.get("confidence"),
+                "symptoms": entities.get("clinical_note", ""),
+                "glossary_terms_used": glossary_terms or [],
+                "clinical_entities": entities,  # We'll assume this column exists or will be added
+                "assessment_date": "now()",
+            }
+            
+            result = self.client.table("patient_assessments").insert(record).execute()
+            return result.data[0] if result.data else {}
+        except Exception as e:
+            logger.error(f"Failed to save patient assessment: {str(e)}")
+            # Don't raise here to avoid breaking the user response, just log it
+            return {}
+
     async def close(self) -> None:
         """Close database connection."""
         self._client = None

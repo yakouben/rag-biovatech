@@ -2,7 +2,7 @@
 Pydantic schemas for request/response validation.
 Ensures type safety and proper API contracts.
 """
-from typing import Any, Optional
+from typing import Any, Optional, List, Dict
 
 from pydantic import BaseModel, Field, validator
 
@@ -32,6 +32,29 @@ class PatientData(BaseModel):
                 "comorbidities": 1,
             }
         }
+
+class ClinicalEntities(BaseModel):
+    """Extracted clinical entities from patient text."""
+
+    symptoms: List[str] = Field(default_factory=list, description="List of symptoms mentioned")
+    medications: List[str] = Field(default_factory=list, description="List of medications mentioned")
+    missed_medications: List[str] = Field(default_factory=list, description="List of missed medications mentioned")
+    vitals: Dict[str, Optional[float]] = Field(default_factory=dict, description="Extracted vitals like BP or glucose")
+    severity_hints: List[str] = Field(default_factory=list, description="Keywords indicating severity")
+    clinical_note: str = Field(..., description="Short summarized clinical note")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "symptoms": ["chest pain", "shortness of breath"],
+                "medications": ["Amlodipine"],
+                "missed_medications": ["Metformin"],
+                "vitals": {"systolic_bp": 150, "glucose": 210},
+                "severity_hints": ["severe", "crushing"],
+                "clinical_note": "Patient reports severe chest pain and missed morning Metformin dose."
+            }
+        }
+
 
 
 class EmbedRequest(BaseModel):
@@ -189,6 +212,7 @@ class NOURResponse(BaseModel):
     clinical_assessment: str = Field(description="Clinical assessment from NOUR")
     risk_assessment: RiskAssessmentResponse = Field(description="Risk assessment")
     recommendations: list[str] = Field(description="Clinical recommendations")
+    extracted_entities: Optional[ClinicalEntities] = Field(None, description="Extracted clinical entities")
     glossary_context: list[GlossaryEntry] = Field(description="Relevant glossary entries")
 
     class Config:
@@ -295,5 +319,20 @@ class ErrorResponse(BaseModel):
                 "message": "Invalid patient data",
                 "details": {"field": "age", "reason": "must be positive"},
                 "timestamp": "2024-01-15T10:30:00Z",
+            }
+        }
+
+class DoctorChatRequest(BaseModel):
+    """Request for doctor to chat with patient history."""
+    patient_id: str = Field(..., description="Unique patient identifier")
+    question: str = Field(..., description="Doctor's clinical question")
+    include_raw_history: bool = Field(False, description="Whether to include raw history in response")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "patient_id": "p123",
+                "question": "How many times did the patient miss Metformin this month?",
+                "include_raw_history": False
             }
         }

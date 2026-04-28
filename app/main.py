@@ -13,6 +13,9 @@ from fastapi.responses import JSONResponse
 
 from app.config import get_settings
 from app.routes import api
+from app.routes.api import router
+import os
+
 from app.schemas import GlossarySearchRequest
 from app.services.drift_service import get_drift_service
 from app.services.gemini_service import get_gemini_service
@@ -74,9 +77,9 @@ def create_app() -> FastAPI:
 
     # Create app
     app = FastAPI(
-        title="ChronicCare AI",
-        description="YAKOUB's AI brain for chronic disease management in Algeria",
-        version=settings.app_version,
+        title="ChronicCare AI API",
+        description="RAG-powered API for chronic disease management",
+        version="1.0.0",
         docs_url="/docs",
         redoc_url="/redoc",
         openapi_url="/openapi.json",
@@ -155,8 +158,8 @@ def create_app() -> FastAPI:
             },
         )
 
-    # Include routes
-    app.include_router(api.router)
+    # Include routes - router already has /api/v1 prefix
+    app.include_router(router)
 
     # ======================
     # CONTRACT-COMPLIANT ALIASES
@@ -166,66 +169,43 @@ def create_app() -> FastAPI:
     # Create an AI-prefixed router for contract compliance
     ai_router = APIRouter(prefix="/ai", tags=["ai-contract"])
 
-    # Alias: /ai/chat → /api/v1/nour with risk merged
+    # Alias: /ai/chat → /api/v1/chat
     @ai_router.post("/chat")
-    async def ai_chat_alias(request: dict[str, Any]):
-        """Alias to /api/v1/chat - delegates to NOUR endpoint."""
-        # This is handled by the new /api/v1/chat endpoint
-        # Client calls POST /ai/chat which routes here
-        return await api.ai_chat(
-            request=request,
-            x_internal_key=None  # Will be passed through headers by FastAPI
-        )
+    async def ai_chat_alias(request_dict: dict[str, Any]):
+        """Alias to /api/v1/chat."""
+        try:
+            req = NOURRequest(**request_dict)
+            return await api.ai_chat(request=req)
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=str(e))
 
-    # Alias: /ai/drift/{patient_id} → /api/v1/drift-detection
+    # Alias: /ai/drift/{patient_id} → /api/v1/check-drift
     @ai_router.post("/drift/{patient_id}")
     async def ai_drift_alias(patient_id: str):
         """Alias to drift detection endpoint."""
-        return await api.detect_drift()
+        return await api.check_patient_drift(patient_id=patient_id)
 
     # Alias: /ai/pdf/{patient_id} → /api/v1/reports/generate
     @ai_router.post("/pdf/{patient_id}")
-    async def ai_pdf_alias(patient_id: str, request: dict[str, Any]):
+    async def ai_pdf_alias(patient_id: str, request_dict: dict[str, Any]):
         """Alias to PDF generation endpoint."""
-        # Extract patient name from request or use patient_id
-        patient_name = request.get("patient_name", f"Patient {patient_id}")
-        return await api.generate_report(
-            patient_id=patient_id,
-            patient_name=patient_name,
-            request=request
-        )
-
-    # Alias: /ai/glossary → /api/v1/glossary
-    @ai_router.get("/glossary")
-    async def ai_glossary_alias(skip: int = 0, limit: int = 100):
-        """Alias to glossary endpoint."""
-        return await api.get_full_glossary(skip=skip, limit=limit)
-
-    # Alias: /ai/glossary/match → /api/v1/glossary/search
-    @ai_router.post("/glossary/match")
-    async def ai_glossary_match_alias(request: dict[str, Any]):
-        """Alias to glossary search endpoint."""
-        glossary_request = GlossarySearchRequest(
-            query=request.get("query", ""),
-            limit=request.get("limit", 10),
-            language=request.get("language", "darija")
-        )
-        return await api.search_glossary(glossary_request)
+        try:
+            req = NOURRequest(**request_dict)
+            patient_name = request_dict.get("patient_name", f"Patient {patient_id}")
+            return await api.generate_report(
+                patient_id=patient_id,
+                patient_name=patient_name,
+                request=req
+            )
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=str(e))
 
     app.include_router(ai_router)
 
     # Root route
-    @app.get("/", tags=["root"])
-    async def root() -> dict[str, str]:
-        """Root endpoint."""
-        return {
-            "message": "ChronicCare AI Service",
-            "version": settings.app_version,
-            "docs": "/docs",
-            "health": "/api/v1/health",
-            "primary_endpoint": "/ai/chat",
-            "contract": "Seghir Integration v1.0",
-        }
+    @app.get("/")
+    def health_check():
+        return {"status": "ok", "message": "ChronicCare AI API is running"}
 
     return app
 
