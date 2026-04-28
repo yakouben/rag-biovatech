@@ -1,8 +1,8 @@
 CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS patients (
-    id BIGSERIAL PRIMARY KEY,
-    patient_id TEXT UNIQUE NOT NULL,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     first_name TEXT,
     last_name TEXT,
     age INTEGER,
@@ -13,21 +13,21 @@ CREATE TABLE IF NOT EXISTS patients (
 );
 
 CREATE TABLE IF NOT EXISTS medical_glossary (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     darija_term TEXT NOT NULL UNIQUE,
     french_term TEXT,
     english_term TEXT,
     category TEXT NOT NULL,
     severity INTEGER DEFAULT 1,
     description TEXT,
-    related_terms TEXT[],
+    related_terms text[],
     embedding vector(768),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS patient_assessments (
     id BIGSERIAL PRIMARY KEY,
-    patient_id BIGINT NOT NULL REFERENCES patients(id),
+    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     age INTEGER NOT NULL,
     systolic_bp INTEGER NOT NULL,
     diastolic_bp INTEGER NOT NULL,
@@ -64,6 +64,23 @@ ALTER TABLE patients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE medical_glossary ENABLE ROW LEVEL SECURITY;
 ALTER TABLE patient_assessments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE model_metrics ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies
+-- Patients: users see only their own data
+CREATE POLICY patients_select_own ON patients FOR SELECT USING (id::text = auth.uid()::text OR auth.role() = 'admin');
+CREATE POLICY patients_insert_own ON patients FOR INSERT WITH CHECK (id::text = auth.uid()::text OR auth.role() = 'admin');
+CREATE POLICY patients_update_own ON patients FOR UPDATE USING (id::text = auth.uid()::text OR auth.role() = 'admin');
+
+-- Patient Assessments: users see assessments for their patients
+CREATE POLICY assessments_select_own ON patient_assessments FOR SELECT USING (patient_id::text = auth.uid()::text OR auth.role() = 'admin');
+CREATE POLICY assessments_insert_own ON patient_assessments FOR INSERT WITH CHECK (patient_id::text = auth.uid()::text OR auth.role() = 'admin');
+
+-- Medical Glossary: readable by all authenticated users
+CREATE POLICY glossary_select_public ON medical_glossary FOR SELECT TO authenticated USING (true);
+
+-- Model Metrics: readable by all, writable by admin only
+CREATE POLICY metrics_select_authenticated ON model_metrics FOR SELECT TO authenticated USING (true);
+CREATE POLICY metrics_insert_admin ON model_metrics FOR INSERT TO authenticated WITH CHECK (auth.role() = 'admin');
 
 CREATE OR REPLACE FUNCTION search_glossary_by_embedding(query_embedding vector(768), limit_results INT DEFAULT 10)
 RETURNS TABLE(id BIGINT, darija_term TEXT, french_term TEXT, english_term TEXT, category TEXT, severity INT, description TEXT, similarity FLOAT)
