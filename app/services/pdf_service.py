@@ -77,6 +77,7 @@ class PDFReportService:
         risk_assessment: dict[str, Any],
         clinical_notes: str,
         glossary_context: str,
+        adherence_score: float = 0.0,
     ) -> bytes:
         """
         Generate a comprehensive clinical report in PDF format.
@@ -170,6 +171,11 @@ class PDFReportService:
                     self._get_status_badge(
                         patient_data.get("fasting_glucose", 100), "glucose"
                     ),
+                ],
+                [
+                    "Medication Adherence",
+                    f"{int(adherence_score * 100)}%",
+                    "Good" if adherence_score > 0.8 else "Needs Attention",
                 ],
             ]
             vitals_table = Table(vital_signs_data, colWidths=[2 * inch, 2 * inch, 1.5 * inch])

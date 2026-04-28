@@ -125,6 +125,7 @@ class DatabaseManager:
             Saved record
         """
         try:
+            from datetime import datetime
             record = {
                 "patient_id": patient_id,
                 "predicted_risk_level": assessment_data.get("risk_level"),
@@ -133,7 +134,7 @@ class DatabaseManager:
                 "symptoms": entities.get("clinical_note", ""),
                 "glossary_terms_used": glossary_terms or [],
                 "clinical_entities": entities,  # We'll assume this column exists or will be added
-                "assessment_date": "now()",
+                "assessment_date": datetime.utcnow().isoformat(),
             }
             
             result = self.client.table("patient_assessments").insert(record).execute()

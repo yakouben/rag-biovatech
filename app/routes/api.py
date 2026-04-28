@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, HTTPException, Header, Query, UploadFile, status
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
 from app.config import get_settings
 from app.database.connection import get_database
@@ -427,7 +427,7 @@ async def nour_reasoning(request: NOURRequest) -> dict[str, Any]:
         # SAVE TO SUPABASE (Background)
         db = get_database()
         asyncio.create_task(db.save_patient_assessment(
-            patient_id=request.patient_data.patient_id if hasattr(request.patient_data, "patient_id") else "unknown",
+            patient_id=request.patient_id,
             assessment_data=risk_assessment,
             entities=real_extracted_entities.dict(),
             glossary_terms=[s.get("darija", "") for s in glossary_entries]
@@ -584,12 +584,13 @@ async def generate_report(
             adherence_score=adherence_score,
         )
 
-        # Return as file
+        # Return as stream
+        from io import BytesIO
         filename = f"chronicare_report_{patient_id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
-        return FileResponse(
-            iter([pdf_bytes]),
+        return StreamingResponse(
+            BytesIO(pdf_bytes),
             media_type="application/pdf",
-            filename=filename,
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
         )
     except ChronicCareException as e:
         logger.error(f"Report generation error: {str(e)}")
@@ -687,4 +688,58 @@ async def check_patient_drift(patient_id: str) -> dict[str, Any]:
         return analysis
     except Exception as e:
         logger.error(f"Drift check failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ======================
+# Clinical Data History
+# ======================
+
+@router.get(
+    "/patient/{patient_id}/history",
+    summary="Get Patient Clinical History",
+    description="Returns structured historical clinical data for dashboard trend graphs.",
+)
+async def get_patient_history(
+    patient_id: str,
+    days: int = Query(30, ge=1, le=90)
+) -> dict[str, Any]:
+    """
+    Fetches historical assessments for trend visualization (BP, Glucose, Adherence).
+    """
+    try:
+        db = get_database()
+        
+        # Calculate date range
+        # (Assuming the database manager has a way to query this)
+        # For the hackathon, we'll use a direct supabase call for maximum speed
+        result = db.client.table("patient_assessments") \
+            .select("assessment_date, clinical_entities, risk_score, symptoms") \
+            .eq("patient_id", patient_id) \
+            .order("assessment_date", desc=True) \
+            .limit(days) \
+            .execute()
+            
+        history = result.data if hasattr(result, "data") else []
+        
+        # Format for charts (e.g., recharts)
+        chart_data = []
+        for entry in history:
+            entities = entry.get("clinical_entities", {})
+            vitals = entities.get("vitals", {})
+            chart_data.append({
+                "date": entry.get("assessment_date"),
+                "risk": entry.get("risk_score"),
+                "systolic": vitals.get("systolic_bp"),
+                "diastolic": vitals.get("diastolic_bp"),
+                "glucose": vitals.get("glucose"),
+                "summary": entry.get("symptoms")
+            })
+            
+        return {
+            "patient_id": patient_id,
+            "count": len(history),
+            "history": chart_data[::-1] # Return in chronological order for the chart
+        }
+    except Exception as e:
+        logger.error(f"Failed to fetch patient history: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

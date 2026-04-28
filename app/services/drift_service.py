@@ -235,16 +235,8 @@ class DriftDetectionService:
                 logger.warning(f"Sharp adherence drop detected for {patient_id}: {long_term:.2f} -> {short_term:.2f}")
                 
                 # Generate warm Darija message using Gemini
-                prompt = f"""Generate a warm, respectful nurture notification in Algerian Darija for a patient who has missed their medications for 3 days.
-The message should be kind, caring, and use traditional Algerian respect terms like 'Khalti' (aunt) or 'Ammi' (uncle) generally.
-Avoid sounding like a robot. Make it sound like a concerned family member or a very kind nurse.
-The goal is to check in on them and remind them about their health.
-DARIJA ONLY."""
-                
-                nurture_message = await gemini_service.generate_nour_response(
-                    patient_symptoms="N/A (Proactive Drift)",
-                    glossary_context="Adherence Drop Detected",
-                    risk_assessment="HIGH (Clinical Drift)",
+                nurture_message = await gemini_service.generate_nurture_notification(
+                    patient_name="Khalti/Ammi" # General respectful terms
                 )
                 # Note: Overriding the generic reasoning with a specific nurture prompt if possible, 
                 # or I'll just use a dedicated generation method. 

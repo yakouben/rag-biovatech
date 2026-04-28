@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, FastAPI, Request
+from fastapi import APIRouter, FastAPI, Request, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -16,7 +16,7 @@ from app.routes import api
 from app.routes.api import router
 import os
 
-from app.schemas import GlossarySearchRequest
+from app.schemas import GlossarySearchRequest, NOURRequest
 from app.services.drift_service import get_drift_service
 from app.services.gemini_service import get_gemini_service
 from app.services.rag_service import get_rag_service
