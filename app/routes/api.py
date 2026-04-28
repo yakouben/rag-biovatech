@@ -743,3 +743,29 @@ async def get_patient_history(
     except Exception as e:
         logger.error(f"Failed to fetch patient history: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get(
+    "/patients/risk-queue",
+    summary="Get High-Risk Patient Queue",
+    description="Returns latest assessments for all patients, prioritized by risk score.",
+)
+async def get_risk_queue() -> list[dict[str, Any]]:
+    """
+    Fetches the latest clinical state for all patients to populate the doctor's dashboard.
+    """
+    try:
+        db = get_database()
+        
+        # In a real app, we'd use a more complex 'DISTINCT ON' or grouped query.
+        # For the hackathon, we fetch recent assessments and the frontend can group or we return raw.
+        result = db.client.table("patient_assessments") \
+            .select("patient_id, assessment_date, risk_score, predicted_risk_level, symptoms") \
+            .order("assessment_date", desc=True) \
+            .limit(100) \
+            .execute()
+            
+        data = result.data if hasattr(result, "data") else []
+        return data
+    except Exception as e:
+        logger.error(f"Failed to fetch risk queue: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

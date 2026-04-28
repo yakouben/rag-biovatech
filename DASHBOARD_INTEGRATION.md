@@ -8,16 +8,16 @@
 > "You are a Lead Frontend Engineer specialized in Next.js, Tailwind CSS, and Shadcn/UI. We are building the **ChronicCare Doctor Dashboard**.
 > 
 > **Core Features to Implement:**
-> 1. **Clinical AI Chat:** A sidebar component that uses `POST /doctor/chat`. It allows the doctor to ask clinical questions about a specific patient. The AI will perform RAG (Retrieval-Augmented Generation) over the patient's entire history.
+> 1. **Clinical AI Chat:** A sidebar component that uses `POST /api/v1/doctor/chat`. It allows the doctor to ask clinical questions about a specific patient. The AI will perform RAG (Retrieval-Augmented Generation) over the patient's entire history.
 > 2. **Patient Health Timeline:** Fetch historical assessments using `GET /api/v1/patient/{id}/history` and visualize trends in Blood Pressure and Glucose using `recharts`. Highlight data points where the `risk_score` was 'HIGH'.
 > 3. **Report Generator:** A button that calls `POST /api/v1/reports/generate`. It must pass `patient_id`, `patient_name`, and `adherence_days` (default 30). Handle the binary response to allow the doctor to save/view the PDF.
-> 4. **Risk Queue:** A main dashboard table that sorts patients by their latest `risk_score`. High-risk patients must have a 'Red' status indicator.
+> 4. **Risk Queue:** A main dashboard table that fetches data from `GET /api/v1/patients/risk-queue` and sorts patients by their latest `risk_score`. High-risk patients must have a 'Red' status indicator.
 > 5. **Security:** Secure all requests with the `X-Internal-Key` header. Ensure the UI feels professional, clinical, and fast."
 
 ## 🔗 Required Endpoints
 
 ### 1. Doctor-Chat (RAG over History)
-- **Endpoint:** `POST /doctor/chat`
+- **Endpoint:** `POST /api/v1/doctor/chat`
 - **Payload:**
   ```json
   {
@@ -34,6 +34,10 @@
 - **Endpoint:** `POST /api/v1/reports/generate?patient_id=p123&patient_name=Fatma_B&adherence_days=30`
 - **Payload:** (Standard patient health data)
 - **Returns:** Binary PDF stream.
+
+### 4. Risk Queue (Main Dashboard)
+- **Endpoint:** `GET /api/v1/patients/risk-queue`
+- **Returns:** Array of latest assessments including `patient_id`, `risk_score`, and `predicted_risk_level`.
 
 ## 🎨 UI/UX Requirements
 - **Command Center:** The doctor should see everything at a glance. Use a clean, "Apple-Health" style aesthetic.

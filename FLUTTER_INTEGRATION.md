@@ -12,7 +12,7 @@
 > 2. **Main Feature:** A 'Talk to Nour' screen. It needs a high-fidelity 'Mic' button. Use the `speech_to_text` package to capture Algerian Darija voice.
 > 3. Send the transcribed text to `POST /api/v1/chat`. Include `patient_id` and a `patient_data` object with vitals (blood pressure, glucose).
 > 4. Handle the response: Display `nour_reasoning` (warm Darija text) and visualize the `risk_score` (low/moderate/high).
-> 5. **Proactive Feature:** Create a background worker that calls `GET /patient/{id}/check-drift`. If `trigger_notification` is true, trigger a local push notification using the `nurture_message_darija`.
+> 5. **Proactive Feature:** Create a background worker that calls `GET /api/v1/patient/{id}/check-drift`. If `trigger_notification` is true, trigger a local push notification using the `nurture_message_darija`.
 > 6. Use the `X-Internal-Key` header for authentication. Implement robust error handling for poor connectivity (common in Algeria)."
 
 ## 🔗 Required Endpoints
@@ -33,7 +33,7 @@
   ```
 
 ### 2. Proactive Drift Check
-- **Endpoint:** `GET /patient/{patient_id}/check-drift`
+- **Endpoint:** `GET /api/v1/patient/{patient_id}/check-drift`
 - **Usage:** Call this once daily or on app open. It detects if the patient has missed meds recently and generates a warm "Nurture" message in Darija.
 
 ## 🎨 UI/UX Requirements
