@@ -1,0 +1,1026 @@
+{
+  "exported_at": "2026-04-28T01:25:12.296292",
+  "total_count": 102,
+  "maladies": [
+    {
+      "id": 103,
+      "darija_term": "السكري",
+      "french_term": "Diabète",
+      "english_term": "Diabetes",
+      "category": "endocrine",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 104,
+      "darija_term": "نسبة السكر",
+      "french_term": "Niveau de glucose",
+      "english_term": "Blood glucose level",
+      "category": "endocrine",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 105,
+      "darija_term": "شياط الدم",
+      "french_term": "Hypertension",
+      "english_term": "High blood pressure",
+      "category": "cardiovascular",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 106,
+      "darija_term": "ضعف الدم",
+      "french_term": "Anémie",
+      "english_term": "Anemia",
+      "category": "hematology",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 107,
+      "darija_term": "الكوليسترول",
+      "french_term": "Cholestérol",
+      "english_term": "Cholesterol",
+      "category": "lipidemia",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 108,
+      "darija_term": "شحوم الدم",
+      "french_term": "Dyslipidémie",
+      "english_term": "Lipid disorder",
+      "category": "lipidemia",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 109,
+      "darija_term": "الكلى",
+      "french_term": "Rein",
+      "english_term": "Kidney",
+      "category": "renal",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 110,
+      "darija_term": "قصور الكلى",
+      "french_term": "Insuffisance rénale",
+      "english_term": "Kidney failure",
+      "category": "renal",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 111,
+      "darija_term": "حصى الكلى",
+      "french_term": "Calculs rénaux",
+      "english_term": "Kidney stones",
+      "category": "renal",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 112,
+      "darija_term": "التهاب الكلى",
+      "french_term": "Néphrite",
+      "english_term": "Nephritis",
+      "category": "renal",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 113,
+      "darija_term": "القلب",
+      "french_term": "Cœur",
+      "english_term": "Heart",
+      "category": "cardiovascular",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 114,
+      "darija_term": "ضعف القلب",
+      "french_term": "Insuffisance cardiaque",
+      "english_term": "Heart failure",
+      "category": "cardiovascular",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 115,
+      "darija_term": "جلطة القلب",
+      "french_term": "Infarctus du myocarde",
+      "english_term": "Heart attack",
+      "category": "cardiovascular",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 116,
+      "darija_term": "ذبحة صدرية",
+      "french_term": "Angine de poitrine",
+      "english_term": "Angina pectoris",
+      "category": "cardiovascular",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 117,
+      "darija_term": "دقات القلب",
+      "french_term": "Rythme cardiaque",
+      "english_term": "Heart rate",
+      "category": "cardiovascular",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 118,
+      "darija_term": "الرئة",
+      "french_term": "Poumon",
+      "english_term": "Lung",
+      "category": "respiratory",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 119,
+      "darija_term": "الربو",
+      "french_term": "Asthme",
+      "english_term": "Asthma",
+      "category": "respiratory",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 120,
+      "darija_term": "السعال",
+      "french_term": "Toux",
+      "english_term": "Cough",
+      "category": "respiratory",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 121,
+      "darija_term": "ضيق التنفس",
+      "french_term": "Dyspnée",
+      "english_term": "Shortness of breath",
+      "category": "respiratory",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 122,
+      "darija_term": "التهاب الشعب الهوائية",
+      "french_term": "Bronchite",
+      "english_term": "Bronchitis",
+      "category": "respiratory",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 123,
+      "darija_term": "المعدة",
+      "french_term": "Estomac",
+      "english_term": "Stomach",
+      "category": "gastrointestinal",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 124,
+      "darija_term": "حموضة المعدة",
+      "french_term": "Reflux gastrique",
+      "english_term": "Acid reflux",
+      "category": "gastrointestinal",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 125,
+      "darija_term": "الإمساك",
+      "french_term": "Constipation",
+      "english_term": "Constipation",
+      "category": "gastrointestinal",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 126,
+      "darija_term": "الإسهال",
+      "french_term": "Diarrhée",
+      "english_term": "Diarrhea",
+      "category": "gastrointestinal",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 127,
+      "darija_term": "التهاب الكبد",
+      "french_term": "Hépatite",
+      "english_term": "Hepatitis",
+      "category": "hepatic",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 128,
+      "darija_term": "السكتة الدماغية",
+      "french_term": "Accident vasculaire cérébral",
+      "english_term": "Stroke",
+      "category": "neurological",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 129,
+      "darija_term": "الزهايمر",
+      "french_term": "Maladie d'Alzheimer",
+      "english_term": "Alzheimer's disease",
+      "category": "neurological",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 130,
+      "darija_term": "الصداع",
+      "french_term": "Migraine",
+      "english_term": "Headache",
+      "category": "neurological",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 131,
+      "darija_term": "الدوخة",
+      "french_term": "Vertige",
+      "english_term": "Dizziness",
+      "category": "neurological",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 132,
+      "darija_term": "تنميل الأطراف",
+      "french_term": "Neuropathie périphérique",
+      "english_term": "Neuropathy",
+      "category": "neurological",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 133,
+      "darija_term": "الغدة الدرقية",
+      "french_term": "Thyroïde",
+      "english_term": "Thyroid",
+      "category": "endocrine",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 134,
+      "darija_term": "قصور الغدة الدرقية",
+      "french_term": "Hypothyroïdie",
+      "english_term": "Hypothyroidism",
+      "category": "endocrine",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 135,
+      "darija_term": "فرط الغدة الدرقية",
+      "french_term": "Hyperthyroïdie",
+      "english_term": "Hyperthyroidism",
+      "category": "endocrine",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 136,
+      "darija_term": "التهاب المفاصل",
+      "french_term": "Arthrite",
+      "english_term": "Arthritis",
+      "category": "rheumatological",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 137,
+      "darija_term": "الروماتويد",
+      "french_term": "Polyarthrite rhumatoïde",
+      "english_term": "Rheumatoid arthritis",
+      "category": "rheumatological",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 138,
+      "darija_term": "هشاشة العظام",
+      "french_term": "Ostéoporose",
+      "english_term": "Osteoporosis",
+      "category": "rheumatological",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 139,
+      "darija_term": "ألم الظهر",
+      "french_term": "Lombago",
+      "english_term": "Back pain",
+      "category": "rheumatological",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 140,
+      "darija_term": "الأنسولين",
+      "french_term": "Insuline",
+      "english_term": "Insulin",
+      "category": "medication",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 141,
+      "darija_term": "الميتفورمين",
+      "french_term": "Metformine",
+      "english_term": "Metformin",
+      "category": "medication",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 142,
+      "darija_term": "الأسبرين",
+      "french_term": "Aspirine",
+      "english_term": "Aspirin",
+      "category": "medication",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 143,
+      "darija_term": "الستاتين",
+      "french_term": "Statine",
+      "english_term": "Statin",
+      "category": "medication",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 144,
+      "darija_term": "حاصرات بيتا",
+      "french_term": "Bêtabloquants",
+      "english_term": "Beta blockers",
+      "category": "medication",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 145,
+      "darija_term": "الحمى",
+      "french_term": "Fièvre",
+      "english_term": "Fever",
+      "category": "symptoms",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 146,
+      "darija_term": "التعرق",
+      "french_term": "Sueurs",
+      "english_term": "Sweating",
+      "category": "symptoms",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 147,
+      "darija_term": "الإرهاق",
+      "french_term": "Fatigue",
+      "english_term": "Fatigue",
+      "category": "symptoms",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 148,
+      "darija_term": "فقدان الشهية",
+      "french_term": "Anorexie",
+      "english_term": "Loss of appetite",
+      "category": "symptoms",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 149,
+      "darija_term": "فقدان الوزن",
+      "french_term": "Perte de poids",
+      "english_term": "Weight loss",
+      "category": "symptoms",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 150,
+      "darija_term": "ضغط الدم الانقباضي",
+      "french_term": "Pression systolique",
+      "english_term": "Systolic pressure",
+      "category": "vital_signs",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 151,
+      "darija_term": "ضغط الدم الانبساطي",
+      "french_term": "Pression diastolique",
+      "english_term": "Diastolic pressure",
+      "category": "vital_signs",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 152,
+      "darija_term": "معدل النبض",
+      "french_term": "Fréquence cardiaque",
+      "english_term": "Pulse rate",
+      "category": "vital_signs",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 153,
+      "darija_term": "تحليل الدم",
+      "french_term": "Analyse de sang",
+      "english_term": "Blood test",
+      "category": "lab_tests",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 154,
+      "darija_term": "سكر الدم الصائم",
+      "french_term": "Glucose à jeun",
+      "english_term": "Fasting glucose",
+      "category": "lab_tests",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 155,
+      "darija_term": "الهيموغلوبين الغليكوزيلاتي",
+      "french_term": "Hémoglobine glyquée",
+      "english_term": "HbA1c",
+      "category": "lab_tests",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 156,
+      "darija_term": "وظائف الكلى",
+      "french_term": "Fonction rénale",
+      "english_term": "Renal function",
+      "category": "lab_tests",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 157,
+      "darija_term": "وظائف الكبد",
+      "french_term": "Fonction hépatique",
+      "english_term": "Liver function",
+      "category": "lab_tests",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 158,
+      "darija_term": "ألم خفيف",
+      "french_term": "Douleur légère",
+      "english_term": "Mild pain",
+      "category": "pain_scale",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 159,
+      "darija_term": "ألم متوسط",
+      "french_term": "Douleur modérée",
+      "english_term": "Moderate pain",
+      "category": "pain_scale",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 160,
+      "darija_term": "ألم شديد",
+      "french_term": "Douleur sévère",
+      "english_term": "Severe pain",
+      "category": "pain_scale",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 161,
+      "darija_term": "قصور القلب المزمن",
+      "french_term": "Insuffisance cardiaque chronique",
+      "english_term": "Chronic heart failure",
+      "category": "cardiovascular",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 162,
+      "darija_term": "أمراض الجهاز الدوري",
+      "french_term": "Maladies cardiovasculaires",
+      "english_term": "Cardiovascular diseases",
+      "category": "cardiovascular",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 163,
+      "darija_term": "السكري من النوع الأول",
+      "french_term": "Diabète de type 1",
+      "english_term": "Type 1 diabetes",
+      "category": "endocrine",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 164,
+      "darija_term": "السكري من النوع الثاني",
+      "french_term": "Diabète de type 2",
+      "english_term": "Type 2 diabetes",
+      "category": "endocrine",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 165,
+      "darija_term": "مضاعفات السكري",
+      "french_term": "Complications du diabète",
+      "english_term": "Diabetes complications",
+      "category": "endocrine",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 166,
+      "darija_term": "قدم السكري",
+      "french_term": "Pied diabétique",
+      "english_term": "Diabetic foot",
+      "category": "endocrine",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 167,
+      "darija_term": "اعتلال العين السكري",
+      "french_term": "Rétinopathie diabétique",
+      "english_term": "Diabetic retinopathy",
+      "category": "endocrine",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 168,
+      "darija_term": "ألم الرأس",
+      "french_term": "Mal de tête",
+      "english_term": "Headache",
+      "category": "pain_location",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 169,
+      "darija_term": "ألم الصدر",
+      "french_term": "Douleur thoracique",
+      "english_term": "Chest pain",
+      "category": "pain_location",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 170,
+      "darija_term": "ألم البطن",
+      "french_term": "Douleur abdominale",
+      "english_term": "Abdominal pain",
+      "category": "pain_location",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 171,
+      "darija_term": "ألم الساق",
+      "french_term": "Douleur des jambes",
+      "english_term": "Leg pain",
+      "category": "pain_location",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 172,
+      "darija_term": "مراقبة دورية",
+      "french_term": "Surveillance régulière",
+      "english_term": "Regular monitoring",
+      "category": "follow_up",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 173,
+      "darija_term": "التفاعلات الدوائية",
+      "french_term": "Interactions médicamenteuses",
+      "english_term": "Drug interactions",
+      "category": "medication",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 174,
+      "darija_term": "الحساسية الدوائية",
+      "french_term": "Allergie aux médicaments",
+      "english_term": "Drug allergy",
+      "category": "medication",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 175,
+      "darija_term": "الآثار الجانبية",
+      "french_term": "Effets secondaires",
+      "english_term": "Side effects",
+      "category": "medication",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 176,
+      "darija_term": "التحسن",
+      "french_term": "Amélioration",
+      "english_term": "Improvement",
+      "category": "outcomes",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 177,
+      "darija_term": "التدهور",
+      "french_term": "Aggravation",
+      "english_term": "Deterioration",
+      "category": "outcomes",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 178,
+      "darija_term": "الاستقرار",
+      "french_term": "Stabilisation",
+      "english_term": "Stabilization",
+      "category": "outcomes",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 179,
+      "darija_term": "الحمية",
+      "french_term": "Régime",
+      "english_term": "Diet",
+      "category": "lifestyle",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 180,
+      "darija_term": "ممارسة الرياضة",
+      "french_term": "Exercice physique",
+      "english_term": "Physical exercise",
+      "category": "lifestyle",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 181,
+      "darija_term": "التوتر",
+      "french_term": "Stress",
+      "english_term": "Stress",
+      "category": "lifestyle",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 182,
+      "darija_term": "النوم",
+      "french_term": "Sommeil",
+      "english_term": "Sleep",
+      "category": "lifestyle",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 183,
+      "darija_term": "التدخين",
+      "french_term": "Tabagisme",
+      "english_term": "Smoking",
+      "category": "lifestyle",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 184,
+      "darija_term": "السمنة",
+      "french_term": "Obésité",
+      "english_term": "Obesity",
+      "category": "risk_factors",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 185,
+      "darija_term": "فرط ضغط الدم",
+      "french_term": "Hypertension artérielle",
+      "english_term": "Hypertension",
+      "category": "risk_factors",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 186,
+      "darija_term": "ارتفاع الكوليسترول",
+      "french_term": "Hypercholestérolémie",
+      "english_term": "High cholesterol",
+      "category": "risk_factors",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 187,
+      "darija_term": "التاريخ العائلي",
+      "french_term": "Antécédents familiaux",
+      "english_term": "Family history",
+      "category": "risk_factors",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 188,
+      "darija_term": "الخمول",
+      "french_term": "Apathie",
+      "english_term": "Lethargy",
+      "category": "symptoms",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 189,
+      "darija_term": "القشعريرة",
+      "french_term": "Frissons",
+      "english_term": "Chills",
+      "category": "symptoms",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 190,
+      "darija_term": "الغثيان",
+      "french_term": "Nausée",
+      "english_term": "Nausea",
+      "category": "symptoms",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 191,
+      "darija_term": "القيء",
+      "french_term": "Vomissement",
+      "english_term": "Vomiting",
+      "category": "symptoms",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 192,
+      "darija_term": "الحكة",
+      "french_term": "Prurit",
+      "english_term": "Itching",
+      "category": "symptoms",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 193,
+      "darija_term": "الطفح الجلدي",
+      "french_term": "Éruption cutanée",
+      "english_term": "Rash",
+      "category": "symptoms",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 194,
+      "darija_term": "التورم",
+      "french_term": "Œdème",
+      "english_term": "Edema",
+      "category": "symptoms",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 195,
+      "darija_term": "الزرقان",
+      "french_term": "Cyanose",
+      "english_term": "Cyanosis",
+      "category": "symptoms",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 196,
+      "darija_term": "الصفار",
+      "french_term": "Ictère",
+      "english_term": "Jaundice",
+      "category": "symptoms",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 197,
+      "darija_term": "المضبوطات",
+      "french_term": "Convulsions",
+      "english_term": "Seizures",
+      "category": "neurological",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 198,
+      "darija_term": "الغيبوبة",
+      "french_term": "Coma",
+      "english_term": "Coma",
+      "category": "neurological",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 199,
+      "darija_term": "فقدان الوعي",
+      "french_term": "Syncope",
+      "english_term": "Fainting",
+      "category": "neurological",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 200,
+      "darija_term": "الشلل",
+      "french_term": "Paralysie",
+      "english_term": "Paralysis",
+      "category": "neurological",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 201,
+      "darija_term": "إدارة المرض المزمن",
+      "french_term": "Gestion de la maladie chronique",
+      "english_term": "Chronic disease management",
+      "category": "management",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 202,
+      "darija_term": "الامتثال العلاجي",
+      "french_term": "Adhérence thérapeutique",
+      "english_term": "Treatment adherence",
+      "category": "management",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 203,
+      "darija_term": "عدم الامتثال",
+      "french_term": "Non-adhérence",
+      "english_term": "Non-compliance",
+      "category": "management",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    },
+    {
+      "id": 204,
+      "darija_term": "المتابعة المنتظمة",
+      "french_term": "Suivi régulier",
+      "english_term": "Regular follow-up",
+      "category": "management",
+      "severity": 1,
+      "description": "",
+      "related_terms": null
+    }
+  ]
+}
