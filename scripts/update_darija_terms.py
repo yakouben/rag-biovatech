@@ -58,7 +58,7 @@ def update_database():
     print(f"\n📝 Processing {len(CORRECTIONS)} corrections...")
     for old_term, new_term in CORRECTIONS.items():
         try:
-            response = supabase.table("glossary").update(
+            response = supabase.table("medical_glossary").update(
                 {"darija_term": new_term}
             ).eq("darija_term", old_term).execute()
             
@@ -76,7 +76,7 @@ def update_database():
     print(f"\n📝 Processing {len(ALTERNATIVES)} alternatives...")
     for old_term, new_term in ALTERNATIVES.items():
         try:
-            response = supabase.table("glossary").update(
+            response = supabase.table("medical_glossary").update(
                 {"darija_term": new_term}
             ).eq("darija_term", old_term).execute()
             
