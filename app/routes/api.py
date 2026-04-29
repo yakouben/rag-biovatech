@@ -854,8 +854,26 @@ async def onboard_patient(request: OnboardingRequest) -> dict[str, Any]:
         gemini_service = get_gemini_service()
         
         # 1. Save Profile
-        profile_dict = request.profile.dict(exclude_none=True)
-        saved_profile = await db.upsert_patient_profile(profile_dict)
+        from app.utils.helpers import calculate_dob
+        parts = request.profile.name.split(" ", 1)
+        profile_data = {
+            "id": request.profile.id,
+            "first_name": parts[0],
+            "last_name": parts[1] if len(parts) > 1 else "",
+            "birth_date": calculate_dob(request.profile.age),
+            "gender": request.profile.gender,
+            "phone": request.profile.phone,
+            "address": request.profile.address,
+            "family_contact_name": request.profile.family_contact_name,
+            "family_contact_phone": request.profile.family_contact_phone,
+            "family_access_granted": request.profile.family_access_granted,
+            "medical_history_summary": request.profile.medical_history_summary,
+        }
+        
+        # Remove None values
+        profile_data = {k: v for k, v in profile_data.items() if v is not None}
+        
+        saved_profile = await db.upsert_patient_profile(profile_data)
         patient_id = saved_profile["id"]
         
         message = "New patient onboarded successfully."

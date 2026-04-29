@@ -8,7 +8,7 @@ DARIJA_MEDICAL_GLOSSARY = [
     # Diabetes & Glucose Management
     {"darija": "السكري", "french": "Diabète", "english": "Diabetes", "category": "endocrine"},
     {"darija": "نسبة السكر", "french": "Niveau de glucose", "english": "Blood glucose level", "category": "endocrine"},
-    {"darija": "شياط الدم", "french": "Hypertension", "english": "High blood pressure", "category": "cardiovascular"},
+    {"darija": "la tension ", "french": "Hypertension", "english": "High blood pressure", "category": "cardiovascular"},
     {"darija": "ضعف الدم", "french": "Anémie", "english": "Anemia", "category": "hematology"},
     {"darija": "الكوليسترول", "french": "Cholestérol", "english": "Cholesterol", "category": "lipidemia"},
     {"darija": "شحوم الدم", "french": "Dyslipidémie", "english": "Lipid disorder", "category": "lipidemia"},

@@ -12,9 +12,9 @@ The UI must feel like a premium medical companion, not a cold hospital app. Ever
 
 - **Design System:**
     - **Background:** Soft Sky Gradient (`#E0F7FA` to `#FFFFFF`).
-    - **Glass Cards:** `BlurView` with 20% opacity white background, 24px border radius, and a 1px white semi-transparent border (`rgba(255,255,255,0.5)`).
+    - **Glass Cards:** `BlurView` with 20% opacity.
     - **Typography:** Use **Urbanist** for all UI elements. Use **Amiri** for Darija/Arabic text with RTL support.
-    - **Buttons:** Sky Blue gradients with soft shadows.
+    - **Buttons:** Sky Blue gradients with sosoft shadows , and may be will the best one ever why noy
 
 ---
 

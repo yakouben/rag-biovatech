@@ -6,3 +6,6 @@ ADD COLUMN IF NOT EXISTS clinical_entities JSONB DEFAULT '{}'::jsonb;
 
 -- Update indexes for performance
 CREATE INDEX IF NOT EXISTS idx_assessments_entities ON patient_assessments USING GIN (clinical_entities);
+
+
+
