@@ -89,7 +89,7 @@ class RAGService:
             ValidationError: If inputs are invalid
         """
         if not medical_terms:
-            raise ValidationError("Medical terms list cannot be empty")
+            return ""
 
         try:
             context_parts = []
@@ -167,7 +167,7 @@ class RAGService:
             ValidationError: If entries are invalid
         """
         if not glossary_entries:
-            raise ValidationError("Glossary entries cannot be empty")
+            return {"total_entries": 0, "categories": [], "by_category": {}}
 
         categories = {}
         for entry in glossary_entries:

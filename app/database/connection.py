@@ -207,6 +207,38 @@ class DatabaseManager:
             logger.error(f"Failed to fetch latest vitals for {patient_id}: {str(e)}")
             return None
 
+    async def upsert_patient_profile(self, profile_data: dict[str, Any]) -> dict[str, Any]:
+        """
+        Create or update a patient profile.
+        
+        Args:
+            profile_data: Dictionary with patient profile fields
+            
+        Returns:
+            The saved profile record
+        """
+        try:
+            # If no ID provided, assume it's a new patient (let DB generate or use phone as temp ID if needed)
+            # However, our schema has id as PRIMARY KEY TEXT, so we usually provide one (e.g. p123 or UUID)
+            if not profile_data.get("id"):
+                import uuid
+                profile_data["id"] = str(uuid.uuid4())
+                
+            result = self.client.table("patients").upsert(profile_data).execute()
+            return result.data[0] if result.data else {}
+        except Exception as e:
+            logger.error(f"Failed to upsert patient profile: {str(e)}")
+            raise DatabaseError(f"Failed to save patient profile: {str(e)}")
+
+    async def get_patient_profile(self, patient_id: str) -> Optional[dict[str, Any]]:
+        """Fetch a full patient profile by ID."""
+        try:
+            result = self.client.table("patients").select("*").eq("id", patient_id).single().execute()
+            return result.data if hasattr(result, "data") else None
+        except Exception as e:
+            logger.error(f"Failed to fetch patient profile {patient_id}: {str(e)}")
+            return None
+
     async def close(self) -> None:
         """Close database connection."""
         self._client = None

@@ -23,9 +23,11 @@ from app.schemas import (
     NOURRequest,
     NOURResponse,
     PredictionRecord,
-    RiskAssessmentRequest,
     RiskAssessmentResponse,
     DoctorChatRequest,
+    PatientProfile,
+    OnboardingRequest,
+    OnboardingResponse,
 )
 from app.services.adherence_service import get_adherence_service
 from app.services.drift_service import get_drift_service
@@ -818,3 +820,84 @@ async def get_risk_queue() -> list[dict[str, Any]]:
         logger.error(f"Failed to fetch risk queue: {str(e)}")
         # Return empty list instead of crashing the dashboard
         return []
+
+# ======================
+# Patient Management
+# ======================
+
+@router.post(
+    "/patients/onboard",
+    response_model=OnboardingResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Onboard New or Existing Patient",
+    description="Creates a detailed patient profile, handles history import, and performs initial risk assessment.",
+)
+async def onboard_patient(request: OnboardingRequest) -> dict[str, Any]:
+    """
+    Onboarding workflow:
+    1. Create/Update Profile (including family contact and clinic origin)
+    2. Perform initial risk assessment if vitals are provided
+    3. Save initial assessment to history
+    4. Run AI analysis for clinical summary and welcome message
+    """
+    try:
+        db = get_database()
+        risk_service = get_risk_service()
+        gemini_service = get_gemini_service()
+        
+        # 1. Save Profile
+        profile_dict = request.profile.dict(exclude_none=True)
+        saved_profile = await db.upsert_patient_profile(profile_dict)
+        patient_id = saved_profile["id"]
+        
+        message = "New patient onboarded successfully."
+        if request.is_import:
+            message = f"Patient profile imported from clinic {request.profile.previous_clinic_id}."
+            
+        # 2. Initial Assessment
+        initial_risk = None
+        vitals_dict = None
+        if request.initial_vitals:
+            vitals_dict = request.initial_vitals.dict()
+            initial_risk = await risk_service.assess_patient_risk(vitals_dict)
+            
+            # Save to history
+            await db.save_patient_assessment(
+                patient_id=patient_id,
+                assessment_data=initial_risk,
+                entities={
+                    "clinical_note": f"Initial onboarding assessment. {'Imported history: ' + request.profile.medical_history_summary if request.is_import else ''}",
+                    "vitals": vitals_dict
+                }
+            )
+
+        # 3. AI Analysis
+        ai_analysis = await gemini_service.analyze_onboarding_data(
+            name=request.profile.name,
+            history_summary=request.profile.medical_history_summary,
+            initial_vitals=vitals_dict
+        )
+            
+        return {
+            "patient_id": patient_id,
+            "status": "success",
+            "message": message,
+            "initial_risk": initial_risk,
+            "ai_analysis": ai_analysis
+        }
+    except Exception as e:
+        logger.error(f"Onboarding failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Onboarding failed: {str(e)}")
+
+@router.get(
+    "/patient/{patient_id}/profile",
+    response_model=PatientProfile,
+    summary="Get Detailed Patient Profile",
+)
+async def get_patient_profile(patient_id: str) -> dict[str, Any]:
+    """Fetches the detailed profile including family contact info."""
+    db = get_database()
+    profile = await db.get_patient_profile(patient_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Patient profile not found")
+    return profile

@@ -20,6 +20,7 @@ ENABLE_PDF_GENERATION = os.getenv("ENABLE_PDF_GENERATION", "true").lower() == "t
 DECISION_TREE_MAX_DEPTH = int(os.getenv("DECISION_TREE_MAX_DEPTH", "10"))
 DECISION_TREE_MIN_SAMPLES_LEAF = int(os.getenv("DECISION_TREE_MIN_SAMPLES_LEAF", "5"))
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama3-8b-8192")
 
 
 # Settings class for compatibility with existing service logic
@@ -40,6 +41,8 @@ class Settings:
         self.decision_tree_max_depth = DECISION_TREE_MAX_DEPTH
         self.decision_tree_min_samples_leaf = DECISION_TREE_MIN_SAMPLES_LEAF
         self.groq_api_key = GROQ_API_KEY
+        self.groq_model = GROQ_MODEL
+
 
         self.app_version = "1.0.0"
         self.environment = os.getenv("ENVIRONMENT", "development")

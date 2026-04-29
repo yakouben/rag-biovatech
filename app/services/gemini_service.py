@@ -306,6 +306,56 @@ INSTRUCTIONS:
                     
             return "Unable to analyze history at this time."
 
+    async def analyze_onboarding_data(
+        self, 
+        name: str, 
+        history_summary: Optional[str] = None, 
+        initial_vitals: Optional[dict[str, Any]] = None
+    ) -> dict[str, str]:
+        """
+        AI logic for patient onboarding:
+        1. Analyzes imported medical history for clinical risks.
+        2. Generates a warm welcome message for the patient and family in Darija.
+        """
+        history_text = history_summary if history_summary else "No previous history provided."
+        vitals_text = json.dumps(initial_vitals) if initial_vitals else "No initial vitals provided."
+        
+        prompt = f"""You are Hela, the clinical assistant for ChronicCare AI.
+A new patient is being onboarded.
+
+PATIENT NAME: {name}
+IMPORTED HISTORY: {history_text}
+INITIAL VITALS: {vitals_text}
+
+INSTRUCTIONS:
+1. Provide a "Clinical Summary" (Professional tone) for the doctor. Highlight any chronic risks or historical trends mentioned.
+2. Provide a "Family Welcome Message" (Warm, respectful Algerian Darija) intended for the patient and their family. 
+   Use terms like 'Khalti' or 'Ammi'. Welcome them to the Biovatech clinic and reassure them they are in good hands.
+3. Provide a "Suggested Focus" for the doctor (e.g., 'Monitor glucose closely', 'Focus on salt reduction').
+
+FORMAT: Return as a JSON object with keys: "clinical_summary", "welcome_message_darija", "suggested_focus".
+"""
+        try:
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                lambda: self.client.models.generate_content(
+                    model=self.generation_model,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                    ),
+                )
+            )
+            return json.loads(response.text)
+        except Exception as e:
+            logger.error(f"Onboarding analysis with Gemini failed: {str(e)}")
+            return {
+                "clinical_summary": "Initial profile created.",
+                "welcome_message_darija": f"Marhab bik {name} f Biovatech. Hna hna bach n'3awnouk.",
+                "suggested_focus": "Baseline monitoring."
+            }
+
     async def embed_batch(self, texts: list[str]) -> list[list[float]]:
         """
         Generate embeddings for multiple texts efficiently.

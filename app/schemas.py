@@ -337,3 +337,32 @@ class DoctorChatRequest(BaseModel):
                 "include_raw_history": False
             }
         }
+
+class PatientProfile(BaseModel):
+    """Full patient profile metadata."""
+    id: Optional[str] = Field(None, description="Unique patient identifier")
+    name: str = Field(..., description="Patient full name")
+    age: Optional[int] = Field(None, ge=0, le=150)
+    gender: Optional[str] = Field(None)
+    phone: Optional[str] = Field(None)
+    address: Optional[str] = Field(None)
+    date_of_birth: Optional[str] = Field(None, description="ISO format date YYYY-MM-DD")
+    family_contact_name: Optional[str] = Field(None)
+    family_contact_phone: Optional[str] = Field(None)
+    family_access_granted: bool = Field(False)
+    previous_clinic_id: Optional[str] = Field(None)
+    medical_history_summary: Optional[str] = Field(None)
+
+class OnboardingRequest(BaseModel):
+    """Request to onboard a new or existing patient."""
+    profile: PatientProfile
+    initial_vitals: Optional[PatientData] = None
+    is_import: bool = Field(False, description="Whether this is an import from a previous clinic")
+
+class OnboardingResponse(BaseModel):
+    """Response from onboarding process."""
+    patient_id: str
+    status: str
+    message: str
+    initial_risk: Optional[RiskAssessmentResponse] = None
+    ai_analysis: Optional[dict[str, str]] = Field(None, description="AI generated summary and welcome message")
