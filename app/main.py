@@ -11,12 +11,20 @@ def create_app() -> FastAPI:
         description="Refactored Modular API for ChronicCare AI"
     )
 
+    origins = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:5173",
+        "*"
+    ]
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=origins,
         allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["*"],
     )
 
     # Inclusion des nouveaux modules avec les bons préfixes
