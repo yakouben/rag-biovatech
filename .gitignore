@@ -10,4 +10,4 @@ node_modules/
 *.egg-info/
 dist/
 build/
-.pytest_cache/
+.pytest_cache/.env
