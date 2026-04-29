@@ -52,7 +52,16 @@ async def onboard_patient(request: OnboardingRequest):
     profile_data = {k: v for k, v in profile_data.items() if v is not None}
     
     # 2. Sauvegarde du profil
-    saved_profile = await db.upsert_patient_profile(profile_data)
+    try:
+        saved_profile = await db.upsert_patient_profile(profile_data)
+    except Exception as e:
+        if "gender_type" in str(e):
+            # Fallback: retry without gender if the database enum is strict
+            profile_data.pop("gender", None)
+            saved_profile = await db.upsert_patient_profile(profile_data)
+        else:
+            raise e
+
     patient_id = saved_profile.get("id")
     
     # 3. Analyse de bienvenue par Hela
