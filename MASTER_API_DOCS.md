@@ -1,6 +1,6 @@
 # 🛠 ChronicCare Master API Reference
 **Base URL:** `https://web-production-fadce.up.railway.app`
-**Security:** All requests require `X-Internal-Key` in the Header.
+**Security:** Authentication is currently disabled for MVP prototype accessibility.
 
 ## 1. Patient Interaction (The "Nour" Brain)
 

@@ -9,7 +9,7 @@ This document is the comprehensive manual for integrating the **Hela AI** patien
 > 
 > **Backend Specs:**
 > - **Base URL**: `https://web-production-fadce.up.railway.app/api/v1`
-> - **Auth**: Every request must have the `X-Internal-Key` header.
+> - **Auth**: None (Disabled for MVP)
 > 
 > **Endpoints to Implement:**
 > 1. `POST /chat`: Main patient intake. Needs `patient_id`, `patient_symptoms`, and a `patient_data` object (age, bp, glucose, bmi, etc.). Returns `hela_response`, `risk_score`, and `extracted_entities`.
@@ -29,10 +29,7 @@ This document is the comprehensive manual for integrating the **Hela AI** patien
 
 ## 📡 Backend Configuration
 *   **Production Base URL**: `https://web-production-fadce.up.railway.app/api/v1`
-*   **Authentication**: Include the following header in your `Dio` or `Http` client:
-    ```dart
-    'X-Internal-Key': 'YOUR_INTERNAL_API_KEY'
-    ```
+*   **Authentication**: None (Disabled for MVP Prototype)
 
 ---
 

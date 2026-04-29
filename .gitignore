@@ -10,4 +10,6 @@ node_modules/
 *.egg-info/
 dist/
 build/
-.pytest_cache/.env
+.pytest_cache/
+.expo/
+scratch/

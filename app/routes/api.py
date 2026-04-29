@@ -72,7 +72,6 @@ def verify_internal_api_key(x_internal_key: str = Header(None)) -> None:
 )
 async def ai_chat(
     request: NOURRequest,
-    x_internal_key: str = Header(None),
 ) -> dict[str, Any]:
     """
     Contract-compliant /ai/chat endpoint.
@@ -81,15 +80,11 @@ async def ai_chat(
 
     Args:
         request: NOURRequest with patient_id, text, and patient_profile
-        x_internal_key: Internal API key for service-to-service auth
 
     Returns:
         Unified response with clinical assessment, risk score, and confidence
     """
     try:
-        # Verify API key if configured
-        verify_internal_api_key(x_internal_key)
-
         gemini_service = get_gemini_service()
         risk_service = get_risk_service()
         rag_service = get_rag_service()

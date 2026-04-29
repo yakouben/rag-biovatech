@@ -13,8 +13,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/ai", tags=["AI Reasoning"])
 
 @router.post("/chat", summary="Main AI Chat with RAG")
-async def ai_chat(request: NOURRequest, x_internal_key: str = Header(None)) -> dict[str, Any]:
-    verify_internal_api_key(x_internal_key)
+async def ai_chat(request: NOURRequest) -> dict[str, Any]:
     gemini_service = get_gemini_service()
     risk_service = get_risk_service()
     rag_service = get_rag_service()
