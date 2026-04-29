@@ -23,6 +23,7 @@ from app.schemas import (
     NOURRequest,
     NOURResponse,
     PredictionRecord,
+    RiskAssessmentRequest,
     RiskAssessmentResponse,
     DoctorChatRequest,
     PatientProfile,
