@@ -39,7 +39,7 @@ async def onboard_patient(request: OnboardingRequest):
         "first_name": parts[0],
         "last_name": parts[1] if len(parts) > 1 else "",
         "birth_date": calculate_dob(request.profile.age),
-        "gender": request.profile.gender,
+        "gender": request.profile.gender.capitalize() if request.profile.gender else None,
         "phone": request.profile.phone,
         "address": request.profile.address,
         "family_contact_name": request.profile.family_contact_name,
