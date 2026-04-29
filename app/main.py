@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from app.routes import ai, patients, doctor, system
 from app.config import get_settings
 
@@ -26,6 +27,26 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
         expose_headers=["*"],
     )
+
+    @app.middleware("http")
+    async def add_cors_header(request: Request, call_next):
+        response = await call_next(request)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        return response
+
+    @app.exception_handler(Exception)
+    async def global_exception_handler(request: Request, exc: Exception):
+        return JSONResponse(
+            status_code=500,
+            content={"message": f"Internal Server Error: {str(exc)}"},
+            headers={
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "*",
+                "Access-Control-Allow-Headers": "*"
+            }
+        )
 
     # Inclusion des nouveaux modules avec les bons préfixes
     app.include_router(ai.router, prefix="/api/v1")
