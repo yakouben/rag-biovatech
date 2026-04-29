@@ -32,10 +32,33 @@ class DatabaseManager:
 
     def _connect(self) -> None:
         """Establish connection to Supabase."""
-        settings = get_settings()
+        import os
+        # Check all known env var names for resilience
+        url = (
+            os.getenv("SUPABASE_URL")
+            or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
+        )
+        key = (
+            os.getenv("SUPABASE_KEY")
+            or os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+        )
+
+        if not url or not url.startswith("https://"):
+            logger.error("SUPABASE_URL is missing or invalid. Check Railway environment variables.")
+            raise DatabaseError(
+                "Missing Supabase URL. Ensure SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL is set.",
+                details={"hint": "Add this variable to your Railway environment settings."},
+            )
+        if not key:
+            logger.error("SUPABASE_KEY is missing. Check Railway environment variables.")
+            raise DatabaseError(
+                "Missing Supabase Key. Ensure SUPABASE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY is set.",
+                details={"hint": "Add this variable to your Railway environment settings."},
+            )
+
         try:
-            self._client = create_client(settings.supabase_url, settings.supabase_key)
-            logger.info("Connected to Supabase")
+            self._client = create_client(url, key)
+            logger.info(f"Connected to Supabase at {url[:40]}...")
         except Exception as e:
             logger.error(f"Failed to connect to Supabase: {str(e)}")
             raise DatabaseError(

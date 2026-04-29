@@ -172,36 +172,51 @@ async def ai_chat(
 async def health_check() -> dict[str, Any]:
     """
     Health check endpoint to verify service and dependencies are operational.
-
-    Returns:
-        HealthCheckResponse with service status details
+    Actually tests DB connection with a real query.
     """
-    try:
-        settings = get_settings()
-        gemini_service = get_gemini_service()
-        risk_service = get_risk_service()
+    settings = get_settings()
+    db_status = "disconnected"
+    gemini_status = "uninitialized"
+    model_status = "unloaded"
+    overall_status = "degraded"
 
-        return {
-            "status": "healthy",
-            "version": settings.app_version,
-            "timestamp": datetime.utcnow().isoformat(),
-            "services": {
-                "database": "connected",
-                "gemini": "initialized",
-                "model": "loaded",
-                "environment": settings.environment,
-            },
-        }
+    # 1. Test real DB connection
+    try:
+        db = get_database()
+        result = db.client.table("medical_glossary").select("id").limit(1).execute()
+        db_status = "connected"
     except Exception as e:
-        logger.error(f"Health check failed: {str(e)}")
-        return {
-            "status": "degraded",
-            "version": settings.app_version,
-            "timestamp": datetime.utcnow().isoformat(),
-            "services": {
-                "error": str(e),
-            },
-        }
+        logger.error(f"Health check - DB connection failed: {str(e)}")
+        db_status = f"error: {str(e)[:80]}"
+
+    # 2. Check Gemini service
+    try:
+        get_gemini_service()
+        gemini_status = "initialized"
+    except Exception as e:
+        gemini_status = f"error: {str(e)[:80]}"
+
+    # 3. Check Risk model
+    try:
+        get_risk_service()
+        model_status = "loaded"
+    except Exception as e:
+        model_status = f"error: {str(e)[:80]}"
+
+    if db_status == "connected" and gemini_status == "initialized":
+        overall_status = "healthy"
+
+    return {
+        "status": overall_status,
+        "version": settings.app_version,
+        "timestamp": datetime.utcnow().isoformat(),
+        "services": {
+            "database": db_status,
+            "gemini": gemini_status,
+            "model": model_status,
+            "environment": settings.environment,
+        },
+    }
 
 
 # ======================
@@ -762,20 +777,20 @@ async def get_patient_history(
 async def get_risk_queue() -> list[dict[str, Any]]:
     """
     Fetches the latest clinical state for all patients to populate the doctor's dashboard.
+    Returns an empty list if the table is empty or doesn't exist yet.
     """
     try:
         db = get_database()
-        
-        # In a real app, we'd use a more complex 'DISTINCT ON' or grouped query.
-        # For the hackathon, we fetch recent assessments and the frontend can group or we return raw.
         result = db.client.table("patient_assessments") \
             .select("patient_id, assessment_date, risk_score, predicted_risk_level, symptoms") \
             .order("assessment_date", desc=True) \
             .limit(100) \
             .execute()
-            
-        data = result.data if hasattr(result, "data") else []
+
+        data = result.data if (hasattr(result, "data") and result.data) else []
+        logger.info(f"Risk queue returned {len(data)} patients")
         return data
     except Exception as e:
         logger.error(f"Failed to fetch risk queue: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Return empty list instead of crashing the dashboard
+        return []
