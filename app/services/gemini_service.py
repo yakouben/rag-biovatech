@@ -38,6 +38,18 @@ class GeminiService:
             self.client = genai.Client(api_key=settings.gemini_api_key)
             self.embedding_model = settings.gemini_embedding_model
             self.generation_model = settings.gemini_model
+            
+            # Initialize Groq Fallback Client
+            self.groq_client = None
+            if settings.groq_api_key:
+                try:
+                    from groq import Groq
+                    self.groq_client = Groq(api_key=settings.groq_api_key)
+                    self.groq_model = "llama3-70b-8192"  # Fast, smart model for fallback
+                    logger.info("Groq fallback service initialized")
+                except Exception as e:
+                    logger.warning(f"Failed to initialize Groq fallback: {e}")
+            
             self._initialized = True
             logger.info("Gemini service initialized (using google-genai SDK)")
 
@@ -98,8 +110,27 @@ class GeminiService:
 
             return response.text
         except Exception as e:
-            logger.error(f"HELA generation failed: {str(e)}")
-            raise GeminiError(f"Failed to generate HELA response: {str(e)}")
+            logger.error(f"HELA generation with Gemini failed: {str(e)}")
+            
+            if self.groq_client:
+                logger.info("Falling back to Groq for HELA generation...")
+                try:
+                    loop = asyncio.get_event_loop()
+                    groq_response = await loop.run_in_executor(
+                        None,
+                        lambda: self.groq_client.chat.completions.create(
+                            model=self.groq_model,
+                            messages=[{"role": "user", "content": prompt}],
+                            temperature=temperature,
+                            max_tokens=1024,
+                        )
+                    )
+                    return groq_response.choices[0].message.content
+                except Exception as groq_e:
+                    logger.error(f"HELA generation with Groq fallback failed: {str(groq_e)}")
+                    raise GeminiError(f"Both Gemini and Groq failed. Gemini: {str(e)}, Groq: {str(groq_e)}")
+            
+            raise GeminiError(f"Failed to generate HELA response (No fallback): {str(e)}")
 
     def _build_hela_prompt(
         self, symptoms: str, glossary_context: str, risk_assessment: str
@@ -170,7 +201,25 @@ PATIENT TEXT:
             data = json.loads(response.text)
             return ClinicalEntities(**data)
         except Exception as e:
-            logger.warning(f"Entity extraction failed: {str(e)}")
+            logger.warning(f"Entity extraction with Gemini failed: {str(e)}")
+            
+            if self.groq_client:
+                logger.info("Falling back to Groq for entity extraction...")
+                try:
+                    loop = asyncio.get_event_loop()
+                    groq_response = await loop.run_in_executor(
+                        None,
+                        lambda: self.groq_client.chat.completions.create(
+                            model=self.groq_model,
+                            messages=[{"role": "user", "content": prompt}],
+                            response_format={"type": "json_object"},
+                        )
+                    )
+                    data = json.loads(groq_response.choices[0].message.content)
+                    return ClinicalEntities(**data)
+                except Exception as groq_e:
+                    logger.error(f"Entity extraction with Groq fallback failed: {str(groq_e)}")
+            
             return ClinicalEntities(clinical_note="Extraction failed")
 
     async def generate_hela_nurture_notification(self, patient_name: str = "Khalti/Ammi") -> str:
@@ -193,7 +242,23 @@ KEEP IT IN DARIJA ONLY. NO FRENCH, NO ENGLISH."""
             )
             return response.text
         except Exception as e:
-            logger.error(f"Nurture generation failed: {str(e)}")
+            logger.error(f"Nurture generation with Gemini failed: {str(e)}")
+            
+            if self.groq_client:
+                logger.info("Falling back to Groq for nurture generation...")
+                try:
+                    loop = asyncio.get_event_loop()
+                    groq_response = await loop.run_in_executor(
+                        None,
+                        lambda: self.groq_client.chat.completions.create(
+                            model=self.groq_model,
+                            messages=[{"role": "user", "content": prompt}],
+                        )
+                    )
+                    return groq_response.choices[0].message.content
+                except Exception as groq_e:
+                    logger.error(f"Nurture generation with Groq fallback failed: {str(groq_e)}")
+                    
             return "Khalti/Ammi, labess? Maranich nchoufek f Hela had liyam. Matنسaych dwa dialek, sahtek hiya el sah."
 
     async def generate_doctor_answer(self, question: str, history_context: str) -> str:
@@ -221,7 +286,23 @@ INSTRUCTIONS:
             )
             return response.text
         except Exception as e:
-            logger.error(f"Doctor chat failed: {str(e)}")
+            logger.error(f"Doctor chat with Gemini failed: {str(e)}")
+            
+            if self.groq_client:
+                logger.info("Falling back to Groq for doctor chat...")
+                try:
+                    loop = asyncio.get_event_loop()
+                    groq_response = await loop.run_in_executor(
+                        None,
+                        lambda: self.groq_client.chat.completions.create(
+                            model=self.groq_model,
+                            messages=[{"role": "user", "content": prompt}],
+                        )
+                    )
+                    return groq_response.choices[0].message.content
+                except Exception as groq_e:
+                    logger.error(f"Doctor chat with Groq fallback failed: {str(groq_e)}")
+                    
             return "Unable to analyze history at this time."
 
     async def embed_batch(self, texts: list[str]) -> list[list[float]]:

@@ -16,3 +16,4 @@ jinja2
 psycopg2-binary
 pytest
 pytest-asyncio
+groq>=0.4.2

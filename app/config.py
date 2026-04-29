@@ -19,6 +19,8 @@ ENABLE_DRIFT_DETECTION = os.getenv("ENABLE_DRIFT_DETECTION", "true").lower() == 
 ENABLE_PDF_GENERATION = os.getenv("ENABLE_PDF_GENERATION", "true").lower() == "true"
 DECISION_TREE_MAX_DEPTH = int(os.getenv("DECISION_TREE_MAX_DEPTH", "10"))
 DECISION_TREE_MIN_SAMPLES_LEAF = int(os.getenv("DECISION_TREE_MIN_SAMPLES_LEAF", "5"))
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
 
 # Settings class for compatibility with existing service logic
 class Settings:
@@ -37,6 +39,8 @@ class Settings:
         self.enable_pdf_generation = ENABLE_PDF_GENERATION
         self.decision_tree_max_depth = DECISION_TREE_MAX_DEPTH
         self.decision_tree_min_samples_leaf = DECISION_TREE_MIN_SAMPLES_LEAF
+        self.groq_api_key = GROQ_API_KEY
+
         self.app_version = "1.0.0"
         self.environment = os.getenv("ENVIRONMENT", "development")
         self.log_level = os.getenv("LOG_LEVEL", "INFO")
