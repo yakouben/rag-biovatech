@@ -1,401 +1,81 @@
-# 📱 MOBILE APP TEAM — Complete Spec
+# 📱 HELA AI: Mobile Patient App - Master Specification
+> **Project:** ChronicCare AI (Hela)
+> **Target:** Algerian Patients (Elderly focus)
+> **Aesthetics:** Modern Glassmorphism | Sky Blue Palette | Urbanist Typography
 > **Base URL:** `https://web-production-fadce.up.railway.app/api/v1`
-> **Auth:** Every request needs header `X-Internal-Key: [from .env file]`
-> **Tech:** Flutter + Riverpod + Dio + fl_chart + speech_to_text
+> **Auth Header:** `X-Internal-Key: hela-secret-123`
 
 ---
 
-## What You're Building (Read This First)
+## 🎨 1. Design System (The "Blue Sky" Aesthetic)
+The app must feel **calm, premium, and trustworthy**. Avoid clinical whites; use soft sky gradients and glass effects.
 
-You are building a **patient-facing mobile app** for chronic disease management
-(Diabetes & Hypertension) targeting Algerian patients. The AI companion is called
-**Hela** and speaks Algerian Darija, French, and Arabic. Your users are often
-**elderly** — so everything must be large, simple, and forgiving.
-
-The patient does NOT create their own account. A **doctor** registers them via a
-web dashboard (that's the other team). The doctor gives the patient a code or
-link to activate the app. Once activated, the patient can chat with Hela,
-view their health trends, get medication reminders, and download PDF reports.
-
-All data lives in **Supabase**. When the patient chats with Hela, the backend
-saves the assessment to `patient_assessments` table. The doctor's dashboard
-reads from the same table to track the patient remotely. This means every
-chat the patient has is automatically visible to their doctor — that's the
-whole point. The patient never needs to "send" anything to the doctor manually.
-
-Your app **reads** what the doctor wrote (profile, medications) and **writes**
-what the patient does (chats, vitals). The dashboard reads what you wrote.
+- **Typography:** Primary font **'Urbanist'** (Google Fonts). Use **'Amiri'** or **'Lateef'** for RTL Darija text.
+- **Palette:**
+    - **Primary:** Sky Blue (`#00B4DB` to `#0083B0` gradient).
+    - **Background:** Soft Blue Tint (`#F0F8FF`).
+    - **Cards:** Glassmorphism (White with 20% opacity, Backdrop blur 15px, thin white border 1px).
+- **Styles:** Rounded corners (24px+), soft shadows, micro-animations for every AI interaction.
 
 ---
 
-## What The Dashboard Team Does (So You Understand)
+## 🛠 2. Core Features & Screen Logic
 
-The dashboard dev builds a web app for doctors. Doctors register patients using
-`POST /patients/onboard`, which creates a profile in the `patients` table. They
-view all their patients sorted by risk using `GET /patients/risk-queue`. They
-ask the AI questions about a patient's history using `POST /doctor/chat`. They
-generate PDF reports. They do NOT interact with the chat — that's your job.
+### Screen 1: Smart Activation (No Login)
+- **Concept:** Elderly patients hate passwords.
+- **Action:** Scan QR Code (provided by doctor) OR enter 6-digit OTP.
+- **Logic:** Calls `GET /patient/{id}/profile` to verify and store the `patient_id` locally using `shared_preferences`.
 
----
+### Screen 2: Dashboard (The "Home")
+- **Greeting:** "Marhba [Name] 👋" in Urbanist Bold.
+- **Nurture Card:** Displays the AI Nurture message if `trigger_notification` is true from `GET /check-drift`. 
+    - *Style:* Glass card with amber border.
+- **Quick Vitals:** Last recorded BP and Glucose in large, readable bubbles.
 
-## YOUR ENDPOINTS
+### Screen 3: Hela AI Chat (The Core)
+- **Thinking Bubble (CRITICAL):** While waiting for a response, display a pulsing glass bubble. 
+    - **Requirement:** Loop through the `thinking_steps` array from the API response to show the AI's "internal work" (e.g., *"Searching glossary..."*, *"Analyzing your symptoms..."*).
+- **Message Bubbles:** 
+    - **Patient:** Right-aligned, Sky Blue.
+    - **Hela:** Left-aligned, Glass/White. RTL support for Darija.
+- **Risk Badge:** Color-coded chip (Low: Green, Moderate: Yellow, High: Red) appended to Hela's response.
+- **Glossary Chips:** If `glossary_context` is returned, show tappable chips below the bubble. Tapping opens a "Glass Bottom Sheet" with the translation.
 
-### `GET /api/v1/health`
-**When to call:** Splash screen, on app launch.
-**What it does:** Checks if the backend (Supabase + Gemini AI + Risk Model) is alive.
-**What you show:**
-- If `status` is `"healthy"` → navigate to Home screen
-- If anything else → full-screen "Service unavailable" with a **Retry** button
-- Do NOT let the user enter a broken app
-
----
-
-### `POST /api/v1/chat`
-**When to call:** Patient taps Send in the chat screen.
-**What it does:** This is the brain. It takes the patient's message (Darija, French, Arabic — anything), runs it through Gemini AI + Risk Assessment + Medical Glossary + Entity Extraction — all in parallel — and returns a structured clinical response. It also **saves the assessment to Supabase automatically** (the doctor will see it in their dashboard).
-**Request body fields:**
-- `patient_id` (string) — the UUID you got from the profile
-- `patient_symptoms` (string) — whatever the patient typed or spoke
-- `patient_data` (object, optional) — if you have cached vitals: `age`, `systolic_bp`, `diastolic_bp`, `fasting_glucose`, `bmi`, `smoking`, `family_history`, `comorbidities`. If null, backend fetches latest from Supabase.
-- `include_glossary` (boolean) — set to `true` to get Darija medical term translations
-
-**What comes back:**
-- `hela_response` — the AI's answer text (may be Darija, French, or mixed)
-- `risk_score` — `"HIGH"`, `"MODERATE"`, or `"LOW"`
-- `confidence` — float 0-1 (e.g. 0.87)
-- `factors` — array of risk factor strings
-- `extracted_entities` — structured object with `symptoms[]`, `medications[]`, `missed_medications[]`, `vitals{}`, `clinical_note`
-- `glossary_context` — array of matched terms with `darija`, `french`, `english`, `category`
-- `monitoring_frequency` — string like "Monthly"
-- `thinking_steps` — (NEW) array of strings showing the AI's internal reasoning (e.g. "Searching glossary...", "Calculating risk...")
-
-**What you show:**
-- **"Hela is thinking…"** animation while waiting (3 bouncing dots, expect 2-4 sec)
-- `hela_response` in a chat bubble, left-aligned with Hela avatar
-- **Risk badge** next to the bubble: GREEN `#2ECC71` for LOW, YELLOW `#F1C40F` for MODERATE, RED `#E74C3C` for HIGH
-- `confidence` as a percentage. If **below 70%** → show `"⚠️ Consultez un médecin"`
-- `glossary_context` as **tappable chips** below the bubble. Tap → bottom sheet with the translation
-- `extracted_entities` in a collapsible "Detected Info" panel
-- **The Thinker (Thinking Bubble):** Use the `thinking_steps` array to show progress messages while the AI is "thinking". This proves the RAG is working and not fake.
+### Screen 4: Clinical History (The "Trends")
+- **Charts:** Use `fl_chart`.
+    - BP: Double line (Systolic/Diastolic).
+    - Glucose: Single line with "Normal Zone" shading.
+- **Logic:** Fetches data from `GET /history?days=30`.
 
 ---
 
-### `GET /api/v1/patient/{patient_id}/check-drift`
-**When to call:** Every app startup, silently in background.
-**What it does:** Compares the patient's 3-day medication adherence vs 30-day baseline. If there's a sharp drop (>30%), it generates a warm Darija nurture message using Gemini.
-**What comes back:**
-- `trigger_notification` — boolean
-- `nurture_message_darija` — string (only if triggered), generated by AI in Darija
-- `long_term_adherence` — float 0-1
-- `short_term_adherence` — float 0-1
-- `adherence_drop` — float
+## 🔌 3. API Integration Guide
 
-**What you show:**
-- If `trigger_notification` is `true` → show a **warm amber gradient card** on the Home screen with the `nurture_message_darija` text (RTL, Amiri font). Two buttons: **"نتكلمو"** → go to Chat | **"Labess"** → dismiss
-- If `false` → show nothing, clean Home screen
+### [POST] `/chat`
+- **Body:** `{ "patient_id": "...", "patient_symptoms": "...", "include_glossary": true }`
+- **Success Handling:** Map `hela_response` to UI. Loop `thinking_steps` for the loader. Show `risk_score` badges.
 
----
+### [GET] `/patient/{id}/check-drift`
+- **Purpose:** Proactive check-in.
+- **Action:** If `trigger_notification` is true, pop up the Nurture Card immediately.
 
-### `GET /api/v1/patient/{patient_id}/history?days=30`
-**When to call:** History screen load + when user changes date range.
-**Query param:** `days` — integer (7, 14, 30, or 90).
-**What it does:** Pulls from `patient_assessments` table in Supabase, extracts vitals from `clinical_entities` JSONB column, returns a chronological array ready for charting.
-**What comes back:**
-- `patient_id` — string
-- `count` — integer
-- `history` — array of objects, each with: `date`, `risk` (HIGH/MODERATE/LOW), `systolic`, `diastolic`, `glucose`, `summary`
+### [POST] `/glossary/search`
+- **Body:** `{ "query": "...", "language": "darija" }`
+- **UI:** A searchable dictionary screen with Urbanist font and RTL results.
 
-**What you show:**
-- **Chart 1 — Blood Pressure:** Two lines on `fl_chart`: systolic (red dashed) + diastolic (blue solid). Grey dashed reference lines at 120 and 80 mmHg
-- **Chart 2 — Glucose:** Single amber line. Grey dashed reference at 100 mg/dL
-- **Risk timeline:** Horizontal row of colored dots (one per day)
-- **Range selector:** Chips for `7j | 14j | 30j | 90j` — tapping one re-fetches
-- **Summary cards:** Last 7 entries showing `summary` text + `date`, tappable to expand
+### [POST] `/reports/generate`
+- **Action:** Trigger PDF download. Show a glass progress bar.
 
 ---
 
-### `POST /api/v1/glossary/search`
-**When to call:** Dictionary screen search OR when user taps a glossary chip from chat.
-**Request body fields:**
-- `query` (string) — search term in any language
-- `limit` (int) — max results, default 10
-- `language` (string) — `"darija"`, `"french"`, or `"english"`
-
-**What it does:** Semantic vector search over the `medical_glossary` table in Supabase using pgvector embeddings.
-**What comes back:** Array of objects with `darija`, `french`, `english`, `category`.
-**What you show:**
-- On Dictionary screen: RTL search bar with placeholder `"ابحث عن مصطلح طبي..."`, debounce 400ms, show result cards (Darija large in Amiri font + French + English)
-- From chat chip: bottom sheet modal with the translation
+## 🏗 4. Technical Requirements
+- **Framework:** Flutter (Latest Stable).
+- **State Management:** Riverpod or Bloc (must be robust).
+- **Networking:** Dio with a base interceptor for the `X-Internal-Key`.
+- **RTL:** Native support for Arabic/Darija layouts.
+- **Accessibility:** Large touch targets, High contrast, Screen reader support for elderly users.
 
 ---
 
-### `GET /api/v1/patient/{patient_id}/profile`
-**When to call:** Home screen (for greeting name) + Profile screen.
-**What it does:** Fetches from the `patients` table in Supabase.
-**What comes back:** `id`, `name`, `age`, `gender`, `phone`, `address`, `date_of_birth`, `family_contact_name`, `family_contact_phone`, `family_access_granted`, `previous_clinic_id`, `medical_history_summary`.
-**What you show:** Name in the Home greeting ("Marhba, [name] 👋"). Full info on Profile screen.
-
----
-
-### `POST /api/v1/reports/generate`
-**When to call:** Patient taps "Download My Report" on Profile screen.
-**Query params:** `patient_id`, `patient_name`, `adherence_days` (default 30).
-**What it does:** Re-runs risk assessment + adherence calculation + glossary lookup + AI clinical reasoning, then generates a PDF using ReportLab. Streams it back as `application/pdf`.
-**What you show:**
-- Progress dialog while generating (3-5 sec)
-- Save the PDF to device, open a preview screen
-- Share + Print buttons
-
----
-
-## YOUR SCREENS
-
-| # | Screen | API Calls | What It Shows |
-|---|--------|-----------|---------------|
-| 1 | Splash | `GET /health` | Logo pulse → Home or retry |
-| 2 | Home | `GET /check-drift` + `GET /history?days=7` + `GET /profile` | Greeting + nurture card + risk gauge + mini glucose chart |
-| 3 | Chat | `POST /chat` | WhatsApp-style bubbles + mic + risk badge + glossary chips |
-| 4 | History | `GET /history?days=N` | BP chart + glucose chart + risk dots + summaries |
-| 5 | Dictionary | `POST /glossary/search` | RTL search + translation cards |
-| 6 | Profile | `GET /profile` + `POST /reports/generate` | Patient info + PDF download |
-
-**Bottom nav:** Home | Chat | History | Dictionary
-
----
-
-## UX RULES
-
-- **Elderly users.** Min font 16px. Min touch target 48x48px.
-- **RTL.** All Darija/Arabic text from the API → `TextDirection.rtl` + `GoogleFonts.amiri`. French/English → `Inter`, LTR.
-- **3 states per screen.** Loading (shimmer) → Success (content) → Error (retry button + message).
-- **Offline.** If any API call fails from network → show "Vérifiez votre connexion / تحقق من اتصالك". Never crash.
-- **Dark mode default.** Background `#0D1117`, cards `#161B22`, text `#E6EDF3`.
-- **Animations.** Hela avatar pulses while thinking (scale 1.0→1.15). Charts animate in (800ms). Screen transitions: FadeTransition 300ms.
-
----
-
-## DART DATA MODELS (Match the real API responses)
-
-```dart
-// lib/models/chat_response.dart
-class ChatResponse {
-  final String helaResponse;
-  final String riskScore;       // "HIGH", "MODERATE", "LOW"
-  final double confidence;
-  final List<String> factors;
-  final ClinicalEntities extractedEntities;
-  final List<GlossaryTerm> glossaryContext;
-  final String monitoringFrequency;
-
-  ChatResponse.fromJson(Map<String, dynamic> json)
-      : helaResponse = json['hela_response'] ?? '',
-        riskScore = json['risk_score'] ?? 'LOW',
-        confidence = (json['confidence'] ?? 0.5).toDouble(),
-        factors = List<String>.from(json['factors'] ?? []),
-        extractedEntities = ClinicalEntities.fromJson(json['extracted_entities'] ?? {}),
-        glossaryContext = (json['glossary_context'] as List? ?? [])
-            .map((e) => GlossaryTerm.fromJson(e)).toList(),
-        monitoringFrequency = json['monitoring_frequency'] ?? '';
-}
-
-// lib/models/clinical_entities.dart
-class ClinicalEntities {
-  final List<String> symptoms;
-  final List<String> medications;
-  final List<String> missedMedications;
-  final Map<String, double?> vitals;
-  final String clinicalNote;
-
-  ClinicalEntities.fromJson(Map<String, dynamic> json)
-      : symptoms = List<String>.from(json['symptoms'] ?? []),
-        medications = List<String>.from(json['medications'] ?? []),
-        missedMedications = List<String>.from(json['missed_medications'] ?? []),
-        vitals = Map<String, double?>.from(json['vitals'] ?? {}),
-        clinicalNote = json['clinical_note'] ?? '';
-}
-
-// lib/models/glossary_term.dart
-class GlossaryTerm {
-  final String darija;
-  final String french;
-  final String english;
-  final String category;
-
-  GlossaryTerm.fromJson(Map<String, dynamic> json)
-      : darija = json['darija'] ?? '',
-        french = json['french'] ?? '',
-        english = json['english'] ?? '',
-        category = json['category'] ?? '';
-}
-
-// lib/models/drift_response.dart
-class DriftResponse {
-  final String patientId;
-  final double longTermAdherence;
-  final double shortTermAdherence;
-  final double adherenceDrop;
-  final bool triggerNotification;
-  final String? nurtureMessageDarija;
-
-  DriftResponse.fromJson(Map<String, dynamic> json)
-      : patientId = json['patient_id'] ?? '',
-        longTermAdherence = (json['long_term_adherence'] ?? 1.0).toDouble(),
-        shortTermAdherence = (json['short_term_adherence'] ?? 1.0).toDouble(),
-        adherenceDrop = (json['adherence_drop'] ?? 0.0).toDouble(),
-        triggerNotification = json['trigger_notification'] ?? false,
-        nurtureMessageDarija = json['nurture_message_darija'];
-}
-
-// lib/models/history_entry.dart
-class HistoryEntry {
-  final String date;
-  final String risk;
-  final int? systolic;
-  final int? diastolic;
-  final int? glucose;
-  final String? summary;
-
-  HistoryEntry.fromJson(Map<String, dynamic> json)
-      : date = json['date'] ?? '',
-        risk = json['risk'] ?? 'LOW',
-        systolic = json['systolic'],
-        diastolic = json['diastolic'],
-        glucose = json['glucose'],
-        summary = json['summary'];
-}
-
-// lib/models/patient_profile.dart
-class PatientProfile {
-  final String id;
-  final String name;
-  final int? age;
-  final String? gender;
-  final String? phone;
-  final String? address;
-  final String? dateOfBirth;
-  final String? familyContactName;
-  final String? familyContactPhone;
-  final bool familyAccessGranted;
-  final String? medicalHistorySummary;
-
-  PatientProfile.fromJson(Map<String, dynamic> json)
-      : id = json['id'] ?? '',
-        name = json['name'] ?? '',
-        age = json['age'],
-        gender = json['gender'],
-        phone = json['phone'],
-        address = json['address'],
-        dateOfBirth = json['date_of_birth'],
-        familyContactName = json['family_contact_name'],
-        familyContactPhone = json['family_contact_phone'],
-        familyAccessGranted = json['family_access_granted'] ?? false,
-        medicalHistorySummary = json['medical_history_summary'];
-}
-```
-
----
-
-## FOLDER STRUCTURE
-
-```
-lib/
-├── main.dart
-├── core/
-│   ├── constants/
-│   │   ├── colors.dart           # All color tokens from UX RULES
-│   │   └── api_constants.dart    # Base URL + endpoint path strings
-│   ├── services/
-│   │   └── api_service.dart      # Single Dio client, ALL API calls
-│   └── utils/
-│       └── risk_helper.dart      # "HIGH" → Color(0xFFE74C3C)
-├── features/
-│   ├── splash/
-│   │   └── splash_screen.dart
-│   ├── home/
-│   │   ├── home_screen.dart
-│   │   ├── home_provider.dart
-│   │   └── widgets/
-│   │       ├── nurture_card.dart
-│   │       └── risk_gauge.dart
-│   ├── chat/
-│   │   ├── chat_screen.dart
-│   │   ├── chat_provider.dart
-│   │   └── widgets/
-│   │       ├── message_bubble.dart
-│   │       ├── risk_badge.dart
-│   │       ├── glossary_chips.dart
-│   │       └── thinking_indicator.dart
-│   ├── history/
-│   │   ├── history_screen.dart
-│   │   ├── history_provider.dart
-│   │   └── widgets/
-│   │       ├── bp_chart.dart
-│   │       └── glucose_chart.dart
-│   ├── dictionary/
-│   │   ├── dictionary_screen.dart
-│   │   └── dictionary_provider.dart
-│   └── profile/
-│       ├── profile_screen.dart
-│       └── profile_provider.dart
-└── models/
-    ├── chat_response.dart
-    ├── clinical_entities.dart
-    ├── glossary_term.dart
-    ├── drift_response.dart
-    ├── history_entry.dart
-    └── patient_profile.dart
-```
-
----
-
-## REQUIRED PACKAGES (pubspec.yaml)
-
-```yaml
-dependencies:
-  flutter:
-    sdk: flutter
-  dio: ^5.4.0
-  flutter_riverpod: ^2.5.0
-  fl_chart: ^0.68.0
-  google_fonts: ^6.2.1
-  speech_to_text: ^6.6.0
-  flutter_dotenv: ^5.1.0
-  shimmer: ^3.0.0
-  flutter_animate: ^4.5.0
-  intl: ^0.19.0
-  shared_preferences: ^2.2.3
-```
-
----
-
-## ACCEPTANCE CRITERIA (Test before saying "done")
-
-| Screen | What to test | Pass condition |
-|--------|-------------|----------------|
-| Splash | Launch app | Calls `/health`, if healthy → goes to Home |
-| Splash | Backend down | Shows "Service unavailable" + retry button |
-| Home | Adherence dropped | Amber card appears with RTL Darija text |
-| Home | Adherence fine | No card, clean dashboard |
-| Home | Mini chart | Shows last 7 days glucose from `/history` |
-| Chat | Send Darija text | Hela responds, risk badge appears colored |
-| Chat | `confidence < 0.70` | Warning "⚠️ Consultez un médecin" shown |
-| Chat | Tap glossary chip | Bottom sheet opens with translation |
-| Chat | Microphone button | Records speech, fills text field |
-| History | Default load | BP + glucose charts render with 30 days data |
-| History | Tap "7j" chip | Charts re-fetch with `?days=7` |
-| Dictionary | Type "sokor" | Returns diabetes entry with Darija/French/English |
-| Profile | Load screen | Shows patient name, age, family contact |
-| Profile | Tap "Download Report" | PDF downloads, preview opens |
-| All screens | Kill network | Shows connection error, no crash |
-| All screens | Arabic text | Renders RTL with Amiri font |
-
----
-
-## BUILD ORDER (Start here)
-
-1. `lib/core/constants/colors.dart` — paste all color tokens
-2. `lib/core/services/api_service.dart` — Dio + auth interceptor + every endpoint method
-3. `lib/models/` — all 6 model files with `fromJson`
-4. Screens in order: **Splash → Home → Chat → History → Dictionary → Profile**
-5. Wire Riverpod providers to each screen
-6. Test live against: `https://web-production-fadce.up.railway.app/api/v1/health`
+## 🎯 Developer Mission
+Your goal is to build an app that feels like a **caring daughter/son** (Hela) living inside a **premium sky-blue interface**. Every time the patient talks to the app, they must see that Hela is "Thinking" (via `thinking_steps`) and feel reassured by the medical accuracy proven by the `glossary_context`.
