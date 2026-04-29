@@ -1,81 +1,89 @@
-# 📱 HELA AI: Mobile Patient App - Master Specification
-> **Project:** ChronicCare AI (Hela)
-> **Target:** Algerian Patients (Elderly focus)
-> **Aesthetics:** Modern Glassmorphism | Sky Blue Palette | Urbanist Typography
+# 🚀 HELA AI: React Native Master Specification (From Scratch)
+> **Stack:** React Native (Expo or CLI) + Zustand + Axios + React Navigation + Expo Blur
+> **Design Theme:** Blue Sky Glassmorphism (Premium UI)
+> **Typography:** Urbanist (Main) | Amiri (Arabic/Darija)
 > **Base URL:** `https://web-production-fadce.up.railway.app/api/v1`
-> **Auth Header:** `X-Internal-Key: hela-secret-123`
+> **Auth:** Header `X-Internal-Key: hela-secret-123`
 
 ---
 
-## 🎨 1. Design System (The "Blue Sky" Aesthetic)
-The app must feel **calm, premium, and trustworthy**. Avoid clinical whites; use soft sky gradients and glass effects.
+## 🎨 1. THE VISION: "Blue Sky & Glass"
+The UI must feel like a premium medical companion, not a cold hospital app. Every element should feel light, airy, and modern.
 
-- **Typography:** Primary font **'Urbanist'** (Google Fonts). Use **'Amiri'** or **'Lateef'** for RTL Darija text.
-- **Palette:**
-    - **Primary:** Sky Blue (`#00B4DB` to `#0083B0` gradient).
-    - **Background:** Soft Blue Tint (`#F0F8FF`).
-    - **Cards:** Glassmorphism (White with 20% opacity, Backdrop blur 15px, thin white border 1px).
-- **Styles:** Rounded corners (24px+), soft shadows, micro-animations for every AI interaction.
-
----
-
-## 🛠 2. Core Features & Screen Logic
-
-### Screen 1: Smart Activation (No Login)
-- **Concept:** Elderly patients hate passwords.
-- **Action:** Scan QR Code (provided by doctor) OR enter 6-digit OTP.
-- **Logic:** Calls `GET /patient/{id}/profile` to verify and store the `patient_id` locally using `shared_preferences`.
-
-### Screen 2: Dashboard (The "Home")
-- **Greeting:** "Marhba [Name] 👋" in Urbanist Bold.
-- **Nurture Card:** Displays the AI Nurture message if `trigger_notification` is true from `GET /check-drift`. 
-    - *Style:* Glass card with amber border.
-- **Quick Vitals:** Last recorded BP and Glucose in large, readable bubbles.
-
-### Screen 3: Hela AI Chat (The Core)
-- **Thinking Bubble (CRITICAL):** While waiting for a response, display a pulsing glass bubble. 
-    - **Requirement:** Loop through the `thinking_steps` array from the API response to show the AI's "internal work" (e.g., *"Searching glossary..."*, *"Analyzing your symptoms..."*).
-- **Message Bubbles:** 
-    - **Patient:** Right-aligned, Sky Blue.
-    - **Hela:** Left-aligned, Glass/White. RTL support for Darija.
-- **Risk Badge:** Color-coded chip (Low: Green, Moderate: Yellow, High: Red) appended to Hela's response.
-- **Glossary Chips:** If `glossary_context` is returned, show tappable chips below the bubble. Tapping opens a "Glass Bottom Sheet" with the translation.
-
-### Screen 4: Clinical History (The "Trends")
-- **Charts:** Use `fl_chart`.
-    - BP: Double line (Systolic/Diastolic).
-    - Glucose: Single line with "Normal Zone" shading.
-- **Logic:** Fetches data from `GET /history?days=30`.
+- **Design System:**
+    - **Background:** Soft Sky Gradient (`#E0F7FA` to `#FFFFFF`).
+    - **Glass Cards:** `BlurView` with 20% opacity white background, 24px border radius, and a 1px white semi-transparent border (`rgba(255,255,255,0.5)`).
+    - **Typography:** Use **Urbanist** for all UI elements. Use **Amiri** for Darija/Arabic text with RTL support.
+    - **Buttons:** Sky Blue gradients with soft shadows.
 
 ---
 
-## 🔌 3. API Integration Guide
+## 🏗️ 2. PROJECT STRUCTURE & STATE
+- **Navigation:** `Stack.Navigator` for Auth/Activation flow, `BottomTab.Navigator` for main app (Home, Chat, History, Dictionary).
+- **State Management:** Use **Zustand** for global state (Patient Profile, Chat History, Settings).
+- **Storage:** Use `expo-secure-store` to persist the `patient_id` after activation.
 
-### [POST] `/chat`
+---
+
+## 🔌 3. API ENDPOINT MAPPING (Linking the AI)
+
+### A. Activation Flow
+- **Endpoint:** `GET /patient/{id}/profile`
+- **Logic:** Patient scans QR code (extracts ID) or enters OTP. App fetches profile. If successful, save ID and redirect to Home.
+
+### B. The Hela AI Chat (The "Brain")
+- **Endpoint:** `POST /chat`
 - **Body:** `{ "patient_id": "...", "patient_symptoms": "...", "include_glossary": true }`
-- **Success Handling:** Map `hela_response` to UI. Loop `thinking_steps` for the loader. Show `risk_score` badges.
+- **UI Logic:**
+    1. Show a pulsing glass bubble while `isLoading`.
+    2. **The Thinker:** Map the `thinking_steps` array to a sequence of animated text messages (e.g., "Consulting medical database...", "Analyzing symptoms...").
+    3. Display `hela_response` with RTL support.
+    4. Append a `Risk Badge` (Red/Yellow/Green) based on `risk_score`.
+    5. Show `glossary_context` as horizontal scrollable chips.
 
-### [GET] `/patient/{id}/check-drift`
-- **Purpose:** Proactive check-in.
-- **Action:** If `trigger_notification` is true, pop up the Nurture Card immediately.
+### C. Proactive Monitoring (The "Nurture")
+- **Endpoint:** `GET /patient/{id}/check-drift`
+- **Logic:** Call on app foreground. If `trigger_notification` is true, show the **Nurture Glass Card** on Home with the `nurture_message_darija`.
 
-### [POST] `/glossary/search`
-- **Body:** `{ "query": "...", "language": "darija" }`
-- **UI:** A searchable dictionary screen with Urbanist font and RTL results.
+### D. Clinical History (Charts)
+- **Endpoint:** `GET /patient/{id}/history?days=30`
+- **UI:** Use `react-native-wagmi-charts` or `react-native-gifted-charts`.
+    - Render BP (Systolic/Diastolic) and Glucose trends.
+    - Glass-themed cards for each summary entry.
 
-### [POST] `/reports/generate`
-- **Action:** Trigger PDF download. Show a glass progress bar.
+### E. Medical Dictionary
+- **Endpoint:** `POST /glossary/search`
+- **Logic:** Real-time search in Darija/French/English. Display results in RTL cards.
 
 ---
 
-## 🏗 4. Technical Requirements
-- **Framework:** Flutter (Latest Stable).
-- **State Management:** Riverpod or Bloc (must be robust).
-- **Networking:** Dio with a base interceptor for the `X-Internal-Key`.
-- **RTL:** Native support for Arabic/Darija layouts.
-- **Accessibility:** Large touch targets, High contrast, Screen reader support for elderly users.
+## 📱 4. SCREEN-BY-SCREEN REQUIREMENTS
+
+### Screen 1: Activation
+- Minimalist sky background. Large "Scan Doctor's QR" button with glass effect.
+
+### Screen 2: Home (Dashboard)
+- Greeting: "Marhba, [Name]!" (Urbanist Bold).
+- **Nurture Alert:** Floating glass card for AI check-ins.
+- **Quick Metrics:** BP and Glucose summary tiles.
+
+### Screen 3: Chat with Hela
+- Full-screen chat interface.
+- **The Thinking Bubble:** Pulsing animation with real-time `thinking_steps` text.
+- Voice-to-Text: Integration for patients who prefer speaking Darija.
+
+### Screen 4: Medical History
+- Interactive charts. Filter for 7/14/30/90 days.
+- List of previous clinical assessments.
+
+### Screen 5: Profile & Reports
+- Button: "Download PDF Report" -> Calls `POST /reports/generate`.
+- Patient metadata display.
 
 ---
 
-## 🎯 Developer Mission
-Your goal is to build an app that feels like a **caring daughter/son** (Hela) living inside a **premium sky-blue interface**. Every time the patient talks to the app, they must see that Hela is "Thinking" (via `thinking_steps`) and feel reassured by the medical accuracy proven by the `glossary_context`.
+## 🛠️ 5. DEVELOPER INSTRUCTIONS
+1. **Style with Emotion:** Every transition should be smooth (300ms).
+2. **Prouve le RAG:** N'oublie jamais d'afficher les `thinking_steps`. C'est ce qui prouve à l'utilisateur que l'IA travaille vraiment sur ses données médicales.
+3. **Accessibilité :** Taille de police minimum 18px pour les patients âgés.
+4. **RTL Native :** Assure-toi que les textes en Darija s'affichent correctement de droite à gauche.
