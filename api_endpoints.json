@@ -1,0 +1,97 @@
+{
+  "api_name": "ChronicCare AI API",
+  "base_url": "https://web-production-fadce.up.railway.app",
+  "version": "1.1.0",
+  "auth_required": false,
+  "endpoints": [
+    {
+      "module": "AI Reasoning",
+      "prefix": "/api/v1/ai",
+      "routes": [
+        {
+          "method": "POST",
+          "path": "/chat",
+          "summary": "Main AI Chat with RAG",
+          "payload_example": {
+            "patient_id": "PAT-001",
+            "patient_symptoms": "Feeling dizzy",
+            "patient_data": {
+              "age": 60,
+              "systolic_bp": 150,
+              "diastolic_bp": 95,
+              "fasting_glucose": 180,
+              "bmi": 29
+            },
+            "include_glossary": true
+          }
+        }
+      ]
+    },
+    {
+      "module": "Patient Management",
+      "prefix": "/api/v1/patients",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/{patient_id}/profile",
+          "summary": "Get full patient profile"
+        },
+        {
+          "method": "GET",
+          "path": "/{patient_id}/history",
+          "summary": "Get clinical history trends",
+          "query_params": ["days"]
+        },
+        {
+          "method": "GET",
+          "path": "/search",
+          "summary": "Search patients by name or ID",
+          "query_params": ["query"]
+        }
+      ]
+    },
+    {
+      "module": "Doctor Intelligence",
+      "prefix": "/api/v1/doctor",
+      "routes": [
+        {
+          "method": "POST",
+          "path": "/onboard",
+          "summary": "Patient onboarding workflow",
+          "payload_example": {
+            "profile": {
+              "id": "P-100",
+              "name": "Ammi Ahmed",
+              "age": 65,
+              "gender": "male"
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/reports/generate",
+          "summary": "Generate clinical PDF report",
+          "query_params": ["patient_id", "patient_name"]
+        }
+      ]
+    },
+    {
+      "module": "System",
+      "prefix": "/api/v1/system",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/health",
+          "summary": "Check API and DB status"
+        },
+        {
+          "method": "GET",
+          "path": "/glossary",
+          "summary": "Search Darija medical glossary",
+          "query_params": ["query"]
+        }
+      ]
+    }
+  ],
+  "documentation_url": "https://web-production-fadce.up.railway.app/docs"
+}

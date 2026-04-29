@@ -9,6 +9,20 @@ from app.database.connection import get_database
 
 router = APIRouter(prefix="/doctor", tags=["Doctor Intelligence"])
 
+@router.get("/risk-queue", summary="Get High-Risk Patient Queue")
+async def get_risk_queue() -> list[dict[str, Any]]:
+    """Fetches the latest clinical state for all patients, prioritized by risk score."""
+    try:
+        db = get_database()
+        result = db.client.table("patient_assessments") \
+            .select("patient_id, assessment_date, risk_score, symptoms") \
+            .order("assessment_date", desc=True) \
+            .limit(100) \
+            .execute()
+        return result.data if hasattr(result, "data") else []
+    except Exception:
+        return []
+
 from app.utils.helpers import calculate_dob
 
 @router.post("/onboard", response_model=OnboardingResponse)

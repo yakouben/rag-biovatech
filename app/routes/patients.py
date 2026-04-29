@@ -4,7 +4,7 @@ from app.services.drift_service import get_drift_service
 from app.utils.logging import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter(prefix="/patient", tags=["Patient Data"])
+router = APIRouter(prefix="/patients", tags=["Patient Data"])
 
 @router.get("/{patient_id}/history")
 async def get_patient_history(patient_id: str, days: int = Query(30, ge=1, le=90)):
