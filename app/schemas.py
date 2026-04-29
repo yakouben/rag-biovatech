@@ -185,7 +185,7 @@ class NOURRequest(BaseModel):
 
     patient_id: str = Field(..., description="Unique patient identifier")
     patient_symptoms: str = Field(..., min_length=1, description="Patient symptoms description")
-    patient_data: PatientData = Field(description="Patient health metrics")
+    patient_data: Optional[PatientData] = Field(None, description="Patient health metrics. If null, backend will fetch latest from DB.")
     include_glossary: bool = Field(True, description="Include glossary context")
 
     class Config:

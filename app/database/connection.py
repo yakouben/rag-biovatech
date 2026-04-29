@@ -185,6 +185,28 @@ class DatabaseManager:
             # Don't raise here to avoid breaking the user response, just log it
             return {}
 
+    async def get_latest_patient_vitals(self, patient_id: str) -> Optional[dict[str, Any]]:
+        """Fetch the latest vitals/assessment for a specific patient."""
+        try:
+            result = (
+                self.client.table("patient_assessments")
+                .select("clinical_entities")
+                .eq("patient_id", patient_id)
+                .order("assessment_date", desc=True)
+                .limit(1)
+                .execute()
+            )
+            if result.data and len(result.data) > 0:
+                entities = result.data[0].get("clinical_entities", {})
+                if isinstance(entities, str):
+                    import json
+                    entities = json.loads(entities)
+                return entities.get("vitals")
+            return None
+        except Exception as e:
+            logger.error(f"Failed to fetch latest vitals for {patient_id}: {str(e)}")
+            return None
+
     async def close(self) -> None:
         """Close database connection."""
         self._client = None

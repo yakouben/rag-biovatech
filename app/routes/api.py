@@ -415,9 +415,33 @@ async def nour_reasoning(request: NOURRequest) -> dict[str, Any]:
         risk_service = get_risk_service()
         rag_service = get_rag_service()
 
+        # Get patient data from request or database
+        patient_data = request.patient_data
+        if not patient_data:
+            from app.database.connection import get_database
+            from app.schemas import PatientData
+            db = get_database()
+            latest_vitals = await db.get_latest_patient_vitals(request.patient_id)
+            
+            def safe_get(vitals_dict, key, default):
+                if not vitals_dict: return default
+                val = vitals_dict.get(key)
+                return float(val) if val is not None else default
+
+            patient_data = PatientData(
+                age=int(safe_get(latest_vitals, "age", 50)),
+                systolic_bp=int(safe_get(latest_vitals, "systolic_bp", 120)),
+                diastolic_bp=int(safe_get(latest_vitals, "diastolic_bp", 80)),
+                fasting_glucose=int(safe_get(latest_vitals, "glucose", 100)),
+                bmi=float(safe_get(latest_vitals, "bmi", 22.0)),
+                smoking=False,
+                family_history=False,
+                comorbidities=0
+            )
+
         # Get risk assessment
         risk_assessment = await risk_service.assess_patient_risk(
-            request.patient_data.dict()
+            patient_data.dict()
         )
 
         # Get glossary context
