@@ -184,7 +184,7 @@ class NOURRequest(BaseModel):
     """Request for NOUR clinical reasoning."""
 
     patient_id: str = Field(..., description="Unique patient identifier")
-    patient_symptoms: str = Field(..., min_length=10, description="Patient symptoms description")
+    patient_symptoms: str = Field(..., min_length=1, description="Patient symptoms description")
     patient_data: PatientData = Field(description="Patient health metrics")
     include_glossary: bool = Field(True, description="Include glossary context")
 
