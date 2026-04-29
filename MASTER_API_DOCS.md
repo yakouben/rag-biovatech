@@ -10,6 +10,11 @@ Main endpoint for the mobile app. Converts Darija input into clinical reasoning 
   - `patient_id` (string)
   - `patient_symptoms` (string - transcribed Darija/French)
   - `patient_data` (object - vitals)
+- **Response:**
+  - `hela_response` (string)
+  - `thinking_steps` (array - Proof of RAG and internal work)
+  - `risk_score` (HIGH/MODERATE/LOW)
+  - `glossary_context` (array - matched medical terms)
 
 ### `GET /api/v1/patient/{id}/check-drift`
 Proactive reasoning engine. Checks for adherence drops and returns a Darija nurture message.

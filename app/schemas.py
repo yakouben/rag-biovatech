@@ -215,6 +215,7 @@ class NOURResponse(BaseModel):
     recommendations: list[str] = Field(description="Clinical recommendations")
     extracted_entities: Optional[ClinicalEntities] = Field(None, description="Extracted clinical entities")
     glossary_context: list[GlossaryEntry] = Field(description="Relevant glossary entries")
+    thinking_steps: List[str] = Field(default_factory=list, description="Internal reasoning steps for the UI")
 
     class Config:
         json_schema_extra = {

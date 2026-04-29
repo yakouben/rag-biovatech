@@ -148,6 +148,13 @@ async def ai_chat(
             "factors": risk_assessment["recommendations"],
             "monitoring_frequency": risk_assessment["monitoring_frequency"],
             "glossary_context": glossary_entries,
+            "thinking_steps": [
+                "🔍 Searching medical glossary for relevant Algerian Darija terms...",
+                f"📚 Found {len(glossary_entries)} relevant medical context matches.",
+                "🧬 Analyzing clinical guidelines for Diabetes/Hypertension...",
+                "📊 Running decision tree risk assessment...",
+                f"🧠 Generating HELA reasoning based on {risk_assessment['category']} risk level."
+            ]
         }
     except ChronicCareException as e:
         logger.error(f"AI chat error: {str(e)}")
