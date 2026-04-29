@@ -45,7 +45,7 @@ class GeminiService:
                 try:
                     from groq import Groq
                     self.groq_client = Groq(api_key=settings.groq_api_key)
-                    self.groq_model = "llama3-70b-8192"  # Fast, smart model for fallback
+                    self.groq_model = settings.groq_model  # use configurable model
                     logger.info("Groq fallback service initialized")
                 except Exception as e:
                     logger.warning(f"Failed to initialize Groq fallback: {e}")
@@ -154,17 +154,18 @@ RISK ASSESSMENT:
 {risk_assessment}
 
 INSTRUCTIONS:
-1. Analyze the symptoms and vitals (Glucose/BP) specifically for Diabetes/Hypertension trends.
-2. If Glucose is > 180 mg/dL or Blood Pressure is > 140/90 mmHg, flag as URGENT.
-3. Reference relevant local medical terms from the glossary.
-4. Provide actionable, culturally relevant advice (e.g., mention Algerian diet impacts like Couscous/sweet tea).
-5. STRUCTURE:
-   - Clinical Assessment (Professional tone)
+1. If the patient is just saying hello or greeting you, respond warmly in Darija (e.g., "Labess Khalti/Ammi?") before addressing clinical data.
+2. Analyze the symptoms and vitals (Glucose/BP) provided.
+3. If Glucose is > 180 mg/dL or Blood Pressure is > 140/90 mmHg, mention that their measurements seem a bit high today, but DO NOT invent symptoms they didn't mention.
+4. Reference relevant local medical terms from the glossary only if they apply.
+5. Provide actionable, culturally relevant advice.
+6. STRUCTURE:
+   - Clinical Assessment (Professional tone - keep it brief if no symptoms reported)
    - Risk Level (LOW/MEDIUM/HIGH/URGENT)
    - Recommended Actions (for the Healthcare Provider)
    - Patient Message (Warm, supportive Algerian Darija message using 'Khalti/Ammi')
 
-Please provide a structured response based on the above instructions."""
+Please provide a structured response based on the above instructions. If the input is just a greeting, prioritize the 'Patient Message' and keep the 'Clinical Assessment' very short."""
 
     async def extract_clinical_entities(self, text: str) -> ClinicalEntities:
         """
