@@ -189,6 +189,41 @@ class RAGService:
         }
 
 
+    async def get_medical_knowledge(
+        self,
+        query: str,
+        limit: int = 3,
+    ) -> str:
+        """
+        Retrieve medical knowledge guidelines for a query.
+        
+        Args:
+            query: Clinical query
+            limit: Number of guidelines to retrieve
+            
+        Returns:
+            Formatted knowledge string
+        """
+        try:
+            query_embedding = await self.gemini.embed_text(query)
+            db = self._get_db()
+            results = await db.search_medical_knowledge(query_embedding, limit=limit)
+            
+            if not results:
+                return "No specific medical guidelines found for this query."
+            
+            knowledge_parts = []
+            for res in results:
+                knowledge_parts.append(
+                    f"Guideline [{res.get('category')}]: {res.get('title')} - {res.get('content')} (Source: {res.get('source')})"
+                )
+            
+            return "\n\n".join(knowledge_parts)
+        except Exception as e:
+            logger.error(f"Knowledge retrieval failed: {str(e)}")
+            return "Error retrieving medical guidelines."
+
+
 # Global RAG service instance
 _rag_service: "RAGService | None" = None
 

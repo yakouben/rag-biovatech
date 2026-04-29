@@ -108,16 +108,21 @@ async def ai_chat(
                 [s.get("darija", "") for s in glossary_results if s.get("darija")]
             )
 
-        # Generate NOUR response and extract entities in parallel
-        nour_response_task = gemini_service.generate_nour_response(
+        # Get medical knowledge guidelines
+        medical_knowledge = await rag_service.get_medical_knowledge(
+            request.patient_symptoms, limit=3
+        )
+
+        # Generate HELA response and extract entities in parallel
+        hela_response_task = gemini_service.generate_hela_response(
             patient_symptoms=request.patient_symptoms,
-            glossary_context=glossary_context,
+            glossary_context=f"{glossary_context}\n\nMEDICAL GUIDELINES:\n{medical_knowledge}",
             risk_assessment=risk_assessment["category"],
         )
         extraction_task = gemini_service.extract_clinical_entities(request.patient_symptoms)
         
-        nour_response, real_extracted_entities = await asyncio.gather(
-            nour_response_task, extraction_task
+        hela_response, real_extracted_entities = await asyncio.gather(
+            hela_response_task, extraction_task
         )
 
         # SAVE TO SUPABASE (Background)
@@ -131,7 +136,7 @@ async def ai_chat(
 
         # UNIFIED RESPONSE - matches Seghir's contract exactly
         return {
-            "nour_response": nour_response,
+            "hela_response": hela_response,
             "extracted_entities": real_extracted_entities,
             "risk_score": risk_assessment["category"],  # HIGH, MODERATE, LOW
             "confidence": risk_assessment["probabilities"].get(
@@ -412,16 +417,21 @@ async def nour_reasoning(request: NOURRequest) -> dict[str, Any]:
                 [s.get("darija", "") for s in glossary_results if s.get("darija")]
             )
 
-        # Generate NOUR response and extract entities in parallel
-        nour_response_task = gemini_service.generate_nour_response(
+        # Get medical knowledge guidelines
+        medical_knowledge = await rag_service.get_medical_knowledge(
+            request.patient_symptoms, limit=3
+        )
+
+        # Generate HELA response and extract entities in parallel
+        hela_response_task = gemini_service.generate_hela_response(
             patient_symptoms=request.patient_symptoms,
-            glossary_context=glossary_context,
+            glossary_context=f"{glossary_context}\n\nMEDICAL GUIDELINES:\n{medical_knowledge}",
             risk_assessment=risk_assessment["category"],
         )
         extraction_task = gemini_service.extract_clinical_entities(request.patient_symptoms)
         
-        nour_response, real_extracted_entities = await asyncio.gather(
-            nour_response_task, extraction_task
+        hela_response, real_extracted_entities = await asyncio.gather(
+            hela_response_task, extraction_task
         )
 
         # SAVE TO SUPABASE (Background)
@@ -434,7 +444,7 @@ async def nour_reasoning(request: NOURRequest) -> dict[str, Any]:
         ))
 
         return {
-            "clinical_assessment": nour_response,
+            "clinical_assessment": hela_response,
             "risk_assessment": risk_assessment,
             "recommendations": risk_assessment["recommendations"],
             "extracted_entities": real_extracted_entities,

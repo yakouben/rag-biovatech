@@ -1,6 +1,6 @@
 """
 Gemini AI Service for ChronicCare.
-Handles embeddings and NOUR reasoning with proper error handling.
+Handles embeddings and HELA reasoning with proper error handling.
 Using the latest google-genai SDK.
 """
 import asyncio
@@ -63,7 +63,7 @@ class GeminiService:
             logger.error(f"Embedding failed for text: {str(e)}")
             raise EmbeddingError(f"Failed to generate embedding: {str(e)}")
 
-    async def generate_nour_response(
+    async def generate_hela_response(
         self,
         patient_symptoms: str,
         glossary_context: str,
@@ -71,10 +71,10 @@ class GeminiService:
         temperature: float = 0.7,
     ) -> str:
         """
-        Generate NOUR (Nurturing Outcomes Using Reasoning) response.
+        Generate HELA (Health Evaluation and Localized Analysis) response.
         """
         try:
-            prompt = self._build_nour_prompt(
+            prompt = self._build_hela_prompt(
                 patient_symptoms, glossary_context, risk_assessment
             )
 
@@ -98,14 +98,20 @@ class GeminiService:
 
             return response.text
         except Exception as e:
-            logger.error(f"NOUR generation failed: {str(e)}")
-            raise GeminiError(f"Failed to generate NOUR response: {str(e)}")
+            logger.error(f"HELA generation failed: {str(e)}")
+            raise GeminiError(f"Failed to generate HELA response: {str(e)}")
 
-    def _build_nour_prompt(
+    def _build_hela_prompt(
         self, symptoms: str, glossary_context: str, risk_assessment: str
     ) -> str:
-        """Build the NOUR clinical reasoning prompt."""
-        return f"""You are NOUR, a specialized clinical reasoning engine for chronic disease management in Algeria.
+        """Build the HELA specialized clinical reasoning prompt."""
+        return f"""You are HELA, a specialized clinical reasoning companion for chronic disease management (Diabetes & Hypertension) in Algeria.
+
+SYSTEM ROLE:
+- You speak fluent Algerian Darija, French, and English.
+- You understand local medical slang (e.g., "Skhana" for fever, "Dawkha" for dizziness, "La tention" for Hypertension).
+- You are an expert in Endocrinology (Diabetes) and Cardiology (Hypertension).
+- You identify 'Drift' in patient behavior and medication non-adherence.
 
 PATIENT PRESENTATION:
 {symptoms}
@@ -117,19 +123,17 @@ RISK ASSESSMENT:
 {risk_assessment}
 
 INSTRUCTIONS:
-1. Provide clinical reasoning based on the patient's symptoms
-2. Reference relevant medical terms from the glossary when applicable
-3. Consider the risk assessment in your recommendations
-4. Provide actionable next steps for the healthcare provider
-5. Be concise and structured in your response
-6. Prioritize patient safety and evidence-based practice
+1. Analyze the symptoms and vitals (Glucose/BP) specifically for Diabetes/Hypertension trends.
+2. If Glucose is > 180 mg/dL or Blood Pressure is > 140/90 mmHg, flag as URGENT.
+3. Reference relevant local medical terms from the glossary.
+4. Provide actionable, culturally relevant advice (e.g., mention Algerian diet impacts like Couscous/sweet tea).
+5. STRUCTURE:
+   - Clinical Assessment (Professional tone)
+   - Risk Level (LOW/MEDIUM/HIGH/URGENT)
+   - Recommended Actions (for the Healthcare Provider)
+   - Patient Message (Warm, supportive Algerian Darija message using 'Khalti/Ammi')
 
-Please provide:
-- Clinical Assessment
-- Relevant Differential Diagnoses
-- Recommended Actions
-- Monitoring Recommendations
-- Red Flags to Watch For"""
+Please provide a structured response based on the above instructions."""
 
     async def extract_clinical_entities(self, text: str) -> ClinicalEntities:
         """
@@ -169,9 +173,9 @@ PATIENT TEXT:
             logger.warning(f"Entity extraction failed: {str(e)}")
             return ClinicalEntities(clinical_note="Extraction failed")
 
-    async def generate_nurture_notification(self, patient_name: str = "Khalti/Ammi") -> str:
+    async def generate_hela_nurture_notification(self, patient_name: str = "Khalti/Ammi") -> str:
         """Generate a warm, caring nurture notification in Algerian Darija."""
-        prompt = f"""You are Nour, a kind and respectful Algerian clinical companion. 
+        prompt = f"""You are Hela, a kind and respectful Algerian clinical companion. 
 Generate a short, warm check-in message in Algerian Darija for {patient_name} who hasn't recorded their medication in 3 days.
 Use very respectful terms like 'Khalti' or 'Ammi'.
 Sound like a concerned daughter or a kind nurse.
@@ -190,7 +194,7 @@ KEEP IT IN DARIJA ONLY. NO FRENCH, NO ENGLISH."""
             return response.text
         except Exception as e:
             logger.error(f"Nurture generation failed: {str(e)}")
-            return "Khalti/Ammi, labess? Maranich nchoufek f Nour had liyam. Matنسaych dwa dialek, sahtek hiya el sah."
+            return "Khalti/Ammi, labess? Maranich nchoufek f Hela had liyam. Matنسaych dwa dialek, sahtek hiya el sah."
 
     async def generate_doctor_answer(self, question: str, history_context: str) -> str:
         """Answer a doctor's question based on patient clinical history."""

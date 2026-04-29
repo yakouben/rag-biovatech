@@ -105,6 +105,24 @@ class DatabaseManager:
                 details={"error": str(e)},
             )
 
+    async def search_medical_knowledge(
+        self, embedding: list[float], limit: int = 5
+    ) -> list[dict[str, Any]]:
+        """Search medical knowledge guidelines using vector similarity."""
+        try:
+            result = self.client.rpc(
+                "search_medical_knowledge",
+                {
+                    "query_embedding": embedding,
+                    "match_threshold": 0.5,
+                    "match_count": limit,
+                },
+            ).execute()
+            return result.data if hasattr(result, "data") else []
+        except Exception as e:
+            logger.error(f"Medical knowledge search failed: {str(e)}")
+            return []
+
     async def save_patient_assessment(
         self, 
         patient_id: str, 

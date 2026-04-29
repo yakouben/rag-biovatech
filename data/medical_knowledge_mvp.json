@@ -1,0 +1,38 @@
+[
+  {
+    "category": "Diabetes",
+    "title": "Glucose Monitoring & Ramadan",
+    "content": "For Algerian patients during Ramadan, fasting blood sugar should be monitored closely. If glucose drops below 70 mg/dL or rises above 300 mg/dL, the fast MUST be broken (Ftar). High risk for dehydration and Ketoacidosis in our hot climate. Recommendation: Consult with a doctor 2 months before Ramadan to adjust insulin/medication doses.",
+    "source": "Algerian Society of Endocrinology (SAE) / International Diabetes Federation"
+  },
+  {
+    "category": "Hypertension",
+    "title": "La Tention & Stress",
+    "content": "In Algeria, stress (Z'aaf) is a major contributor to sudden BP spikes. A BP reading of >= 140/90 mmHg on two separate occasions confirms Hypertension. Urgent care is needed if BP > 180/120 or if there is sudden blurred vision (Mouch f l'ayoun) or chest pain.",
+    "source": "Algerian Society of Cardiology (SAC)"
+  },
+  {
+    "category": "Diabetes",
+    "title": "Metformin & Gastrointestinal Comfort",
+    "content": "Many Algerians stop Metformin due to 'Dawkha f el kerch' (nausea) or diarrhea. To solve this: Start with a low dose (500mg) and increase gradually. MUST be taken in the middle of a meal (Couscous, Tagine, etc.) to minimize stomach irritation. Never stop without consulting your doctor.",
+    "source": "Clinical Practice Guidelines - Algeria"
+  },
+  {
+    "category": "Nutrition",
+    "title": "The Algerian Plate - Diabetes Friendly",
+    "content": "Standard Algerian diet is too high in 'Khobz Eddar' (white bread) and sweet mint tea (Atay b sokor). Solution: Replace white bread with whole-grain or barley bread (Chir). Reduce sugar in tea gradually. Increase 'Slata' (salad) intake before the main course to slow sugar absorption.",
+    "source": "Algerian Nutrition & Health Survey"
+  },
+  {
+    "category": "Hypertension",
+    "title": "Hidden Salt (El Melh) in Local Food",
+    "content": "Avoid 'Khlii' (preserved meat), pickles (Torshi), and high-sodium tomato paste commonly used in Algerian stews. Daily salt should not exceed one teaspoon (5g). Use herbs like 'Kousbor' (Coriander) and 'Maadnous' (Parsley) for flavor instead of salt.",
+    "source": "National Program for Hypertension Control - Algeria"
+  },
+  {
+    "category": "Diabetes",
+    "title": "Foot Care (R'jline)",
+    "content": "Diabetes patients in Algeria must check their feet daily for cuts or redness, especially if they walk to the Mosque or market often. Use comfortable shoes. If a wound doesn't heal, seek medical help immediately to avoid 'Djih' (infection/gangrene).",
+    "source": "Algerian Diabetes Association"
+  }
+]
