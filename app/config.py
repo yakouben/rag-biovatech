@@ -14,7 +14,7 @@ SUPABASE_DB_PORT = os.getenv("SUPABASE_DB_PORT")
 SUPABASE_DB_NAME = os.getenv("SUPABASE_DB_NAME")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
-GEMINI_EMBEDDING_MODEL = os.getenv("GEMINI_EMBEDDING_MODEL", "text-embedding-004")
+GEMINI_EMBEDDING_MODEL = os.getenv("GEMINI_EMBEDDING_MODEL", "models/embedding-001")
 ENABLE_DRIFT_DETECTION = os.getenv("ENABLE_DRIFT_DETECTION", "true").lower() == "true"
 ENABLE_PDF_GENERATION = os.getenv("ENABLE_PDF_GENERATION", "true").lower() == "true"
 DECISION_TREE_MAX_DEPTH = os.getenv("DECISION_TREE_MAX_DEPTH")

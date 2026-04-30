@@ -19,7 +19,7 @@ async def get_embedding(text: str, client: genai.GenerativeAI) -> list[float]:
     """Generate embedding for text."""
     try:
         result = genai.embed_content(
-            model="models/text-embedding-004",
+            model="models/embedding-001",
             content=text,
             task_type="RETRIEVAL_DOCUMENT",
         )
