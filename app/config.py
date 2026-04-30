@@ -48,6 +48,7 @@ class Settings:
         self.environment = os.getenv("ENVIRONMENT", "development")
         self.log_level = os.getenv("LOG_LEVEL", "INFO")
         self.debug = self.environment == "development"
+        self.telegram_bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
 
 @lru_cache
 def get_settings():
