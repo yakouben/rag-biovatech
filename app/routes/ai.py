@@ -18,7 +18,39 @@ async def ai_chat(request: NOURRequest) -> dict[str, Any]:
     risk_service = get_risk_service()
     rag_service = get_rag_service()
 
-    risk_assessment = await risk_service.assess_patient_risk(request.patient_data.dict())
+    if request.patient_data:
+        patient_dict = request.patient_data.dict()
+    else:
+        # Fallback values for risk assessment if the frontend doesn't send them
+        patient_dict = {
+            "age": 50,
+            "systolic_bp": 120,
+            "diastolic_bp": 80,
+            "fasting_glucose": 100,
+            "bmi": 25.0,
+            "smoking": False,
+            "family_history": False,
+            "comorbidities": 0
+        }
+        try:
+            db = get_database()
+            # Attempt to fetch age from profile
+            profile = await db.get_patient_profile(request.patient_id)
+            if profile and profile.get("age"):
+                patient_dict["age"] = profile.get("age")
+            
+            # Attempt to fetch vitals from latest check-in
+            result = db.client.table("patient_checkins").select("*").eq("patient_id", request.patient_id).order("checkin_date", desc=True).limit(1).execute()
+            if result.data:
+                latest = result.data[0]
+                patient_dict["systolic_bp"] = latest.get("systolic_bp") or 120
+                patient_dict["diastolic_bp"] = latest.get("diastolic_bp") or 80
+                patient_dict["fasting_glucose"] = latest.get("fasting_glucose") or 100
+        except Exception as e:
+            logger.warning(f"Could not fetch patient history for AI chat: {e}")
+
+    risk_assessment = await risk_service.assess_patient_risk(patient_dict)
+
     
     glossary_entries = []
     medical_knowledge = ""
