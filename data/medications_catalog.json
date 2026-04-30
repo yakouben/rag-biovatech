@@ -1,0 +1,101 @@
+[
+  {
+    "id": 1,
+    "name": "Doliprane 1000",
+    "molecule": "Paracetamol",
+    "type": "painkiller",
+    "image_source": "https://www.notrepharma.com/11484-square_large_default/doliprane-1000-mg-boite-de-8-gelules-.jpg",
+    "usage_darija": "دواء تاع السخانة و الوجع",
+    "dosage": "1000mg",
+    "frequency": "2-3 fois/jour",
+    "telegram_msg_darija": "💊 ما تنساش تشرب Doliprane تاعك"
+  },
+  {
+    "id": 2,
+    "name": "Efferalgan 1000",
+    "molecule": "Paracetamol",
+    "type": "painkiller",
+    "image_source": "https://www.pharma-medicaments.com/wp-content/uploads/2022/01/3529178-768x509.jpg",
+    "usage_darija": "دواء للوجع و السخانة",
+    "dosage": "1000mg",
+    "frequency": "2-3 fois/jour",
+    "telegram_msg_darija": "💊 شرب Efferalgan تاعك"
+  },
+  {
+    "id": 3,
+    "name": "Augmentin 1g",
+    "molecule": "Amoxicilline + Acide clavulanique",
+    "type": "antibiotic",
+    "image_source": "https://www.pharmacieeiffelcommerce.com/themes/EiffelCommerce/images/statamic/augmentin-500-mg-62-5-mg-adultes-comprime-pellicule-rapport-amoxicilline-acide-clavulanique-8-1.webp",
+    "usage_darija": "مضاد حيوي",
+    "dosage": "1g",
+    "frequency": "2 fois/jour",
+    "telegram_msg_darija": "💊 ما تنساش المضاد الحيوي"
+  },
+  {
+    "id": 4,
+    "name": "Clamoxyl 500",
+    "molecule": "Amoxicilline",
+    "type": "antibiotic",
+    "image_source": "https://pharmaciemaroc.com/wp-content/uploads/2025/11/CLAMOXYL-500-mg.jpg",
+    "usage_darija": "دواء تاع الالتهاب",
+    "dosage": "500mg",
+    "frequency": "3 fois/jour",
+    "telegram_msg_darija": "💊 شرب Clamoxyl"
+  },
+  {
+    "id": 5,
+    "name": "Lantus",
+    "molecule": "Insuline glargine",
+    "type": "diabetes",
+    "image_source": "https://cdn.bimedis.com/models/01km0ye1gn9hk1gg4nctvz442p.jpeg",
+    "usage_darija": "أنسولين طويل",
+    "dosage": "Injection",
+    "frequency": "1 fois/jour",
+    "telegram_msg_darija": "💉 ما تنساش الأنسولين"
+  },
+  {
+    "id": 6,
+    "name": "NovoRapid",
+    "molecule": "Insuline aspart",
+    "type": "diabetes",
+    "image_source": "https://cdn.shopify.com/s/files/1/0012/8440/7394/files/novorapid-flexpen-insulin-aspart-3-ml-novorapid-59535497396588.jpg?v=1734473775&width=400",
+    "usage_darija": "أنسولين قبل الماكلة",
+    "dosage": "Injection",
+    "frequency": "Avant repas",
+    "telegram_msg_darija": "💉 دير الأنسولين قبل الماكلة"
+  },
+  {
+    "id": 7,
+    "name": "Glucophage 850",
+    "molecule": "Metformine",
+    "type": "diabetes",
+    "image_source": "https://www.pharmnet-dz.com/ImageHandler.ashx?imageurl=/img/medics/3627.png",
+    "usage_darija": "دواء السكر",
+    "dosage": "850mg",
+    "frequency": "2 fois/jour",
+    "telegram_msg_darija": "💊 ما تنساش دوا السكر"
+  },
+  {
+    "id": 8,
+    "name": "Amlor 5",
+    "molecule": "Amlodipine",
+    "type": "hypertension",
+    "image_source": "https://cdn.altibbi.com/cdn/cache/large/image/2021/05/30/a11bb556da83523f6de1f431b3b4ace2.webp",
+    "usage_darija": "دواء الضغط",
+    "dosage": "5mg",
+    "frequency": "1 fois/jour",
+    "telegram_msg_darija": "💊 شرب دوا الضغط"
+  },
+  {
+    "id": 9,
+    "name": "CoAprovel",
+    "molecule": "Irbesartan + Hydrochlorothiazide",
+    "type": "hypertension",
+    "image_source": "https://cdn.pim.mesoigner.fr/mesoigner/cd7b245d9f074f25bff94f134b2f1c67/mesoigner-thumbnail-1000-1000-inset/700/305/coaprovel-150-mg-12-5-mg-comprime-pellicule.webp",
+    "usage_darija": "دواء الضغط المرتفع",
+    "dosage": "150/12.5mg",
+    "frequency": "1 fois/jour",
+    "telegram_msg_darija": "💊 ما تنساش دوا الضغط"
+  }
+]
